@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: fhir-validator
+  mvc:
+    problemdetails:
+      enabled:true:
+
+logging:
+  pattern:
+    console: '%d{yyyy-MM-dd HH:mm:ss} [%p] [%t] - %logger{36} - %msg%n'
+
+validator:
+  sv: '4.0.1'
+  ig:
+    - 'il.fhir.r4.dgmc#0.1.18'
+    - 'il.core.fhir.r4#0.16.1'
+  tx-server: 'https://tx.fhir.org/r4'
+  tx-log:
+  locale: en
+
