@@ -73,19 +73,47 @@ public class FhirValidationController {
             log.info("FhirValidationController::validate called");
             var body = request.getInputStream();
             var bytes = body.readAllBytes();
-            var result = FhirValidator.validateBytes(bytes, profiles);
+            var result = FhirValidator.validateBytes(bytes, profiles, configuration);
             if ("outcome".equals(format)) {
-                return ResponseEntity.ok().contentType(MediaType.parseMediaType("application/fhir+json")).body(result.resourceBytes);
+                return ResponseEntity
+                        .ok()
+                        .contentType(MediaType.parseMediaType("application/fhir+json"))
+                        .body(result.resourceBytes);
             }
             else
             {
                 var response = new FhirValidatorResponse();
                 response.messages = result.messages;
-                return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(response);
+                return ResponseEntity
+                        .ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(response);
             }
         } catch (Exception ex) {
             log.error("FhirValidationController::validate - internal server error: ", ex);
-            // return ResponseEntity.internalServerError().build();
+            throw ex;
+        }
+    }
+
+    @Operation(summary = "Performs validation of the input FHIR Bundle in batch mode and returns a response FHIR Bundle that contains OperationOutcome for each resource",
+            requestBody = @RequestBody(description = "A FHIR bundle to validate, in JSON format", content = @Content(mediaType = "application/fhir+json", schema = @Schema(type = "object")), required = true),
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Success. Returned value is a FHIR Bundle of type batch-response.", content = @Content(mediaType = "application/json", schema = @Schema(type = "object"))),
+                    @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content(schema = @Schema(implementation = ProblemDetail.class))) })
+    @PostMapping(value = "/validateBundle", consumes = {"application/json", "text/json", "application/fhir+json"}, produces = {"application/json", "text/json", "application/fhir+json"})
+    public ResponseEntity<?> validateBundle(HttpServletRequest request) throws Throwable {
+        try {
+            log.info("FhirValidationController::validateBundle called");
+            var body = request.getInputStream();
+            var bytes = body.readAllBytes();
+            var result = FhirValidator.validateBundle(bytes, configuration);
+            return ResponseEntity
+                    .ok()
+                    .contentType(MediaType.parseMediaType("application/fhir+json"))
+                    .body(result.resourceBytes);
+
+        } catch (Exception ex) {
+            log.error("FhirValidationController::validateBundle - internal server error: ", ex);
             throw ex;
         }
     }

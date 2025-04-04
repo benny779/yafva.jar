@@ -6,16 +6,13 @@ import org.hl7.fhir.r4.context.SimpleWorkerContext;
 import org.hl7.fhir.r4.fhirpath.FHIRPathEngine;
 import org.hl7.fhir.r4.formats.IParser;
 import org.hl7.fhir.r4.formats.JsonParser;
-import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.OperationOutcome;
-import org.hl7.fhir.r4.model.Resource;
 import org.hl7.fhir.r4.utils.OperationOutcomeUtilities;
 import org.hl7.fhir.r4.utils.ToolingExtensions;
 import org.hl7.fhir.utilities.i18n.I18nConstants;
 import org.hl7.fhir.utilities.validation.ValidationMessage;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -65,39 +62,6 @@ public class FhirUtil {
 
     public static org.hl7.fhir.r5.model.OperationOutcome exceptionToOutcome(Throwable e) {
         return org.hl7.fhir.r5.utils.OperationOutcomeUtilities.outcomeFromTextError(e.toString());
-    }
-
-    public static Resource deserializeR4(String json) throws IOException {
-        return parserR4.parse(json);
-    }
-
-    public static Resource deserializeR4(byte[] bytes) throws IOException {
-        return parserR4.parse(bytes);
-    }
-
-    public static String toDisplayString(Resource resource) {
-        if (resource == null) return "";
-
-        var sb = new StringBuilder();
-        if (resource instanceof Bundle bundle) {
-            for (Bundle.BundleEntryComponent e : bundle.getEntry()) {
-                var r = e.getResource();
-                if (r instanceof OperationOutcome oo) {
-                    var str = toDisplayString(oo);
-                    sb.append(str).append("\r\n");
-                }
-                if (e.getResponse() != null && e.getResponse().getOutcome() != null && e.getResponse().getOutcome() instanceof OperationOutcome oo) {
-                    var str = toDisplayString(oo);
-                    sb.append(str).append("\r\n");
-                }
-            }
-        }
-
-        if (resource instanceof OperationOutcome) {
-            var str = getString((OperationOutcome) resource);
-            sb.append(str).append("\r\n");
-        }
-        return sb.toString();
     }
 
     private static String getString(OperationOutcome resource) {

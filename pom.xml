@@ -6,11 +6,11 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>3.4.4</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<relativePath/>
 	</parent>
 	<groupId>il.co.outburn</groupId>
-	<artifactId>fhir-validator</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<artifactId>outburn-fhir-validator</artifactId>
+	<version>0.0.1</version>
 	<name>fhir-validator</name>
 	<description>REST API facade for the official HL7 FHIR validator</description>
 	<url/>
@@ -27,6 +27,8 @@
 		<url/>
 	</scm>
 	<properties>
+		<hapi.fhir.version>6.5.16</hapi.fhir.version>
+		<org.fhir.ucum.version>1.0.9</org.fhir.ucum.version>
 		<java.version>21</java.version>
 		<maven.compiler.target>21</maven.compiler.target>
 		<maven.compiler.source>21</maven.compiler.source>
@@ -55,12 +57,12 @@
 		<dependency>
 			<groupId>ca.uhn.hapi.fhir</groupId>
 			<artifactId>org.hl7.fhir.validation</artifactId>
-			<version>6.5.16</version>
+			<version>${hapi.fhir.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.fhir</groupId>
 			<artifactId>ucum</artifactId>
-			<version>1.0.9</version>
+			<version>${org.fhir.ucum.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
@@ -76,7 +78,7 @@
 		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-			<version>2.8.5</version>
+			<version>2.8.6</version>
 		</dependency>
 	</dependencies>
 
@@ -113,5 +115,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
 </project>
