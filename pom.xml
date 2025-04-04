@@ -11,7 +11,7 @@
 	<groupId>il.co.outburn</groupId>
 	<artifactId>outburn-fhir-validator</artifactId>
 	<version>0.0.1</version>
-	<name>fhir-validator</name>
+	<name>outburn-fhir-validator</name>
 	<description>REST API facade for the official HL7 FHIR validator</description>
 	<url/>
 	<licenses>
