@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -91,7 +92,11 @@ public class FhirValidationController {
             }
         } catch (Exception ex) {
             log.error("FhirValidationController::validate - internal server error: ", ex);
-            throw ex;
+            var pd = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(500), ex.getMessage());
+            return ResponseEntity
+                    .internalServerError()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(pd);
         }
     }
 
@@ -114,7 +119,11 @@ public class FhirValidationController {
 
         } catch (Exception ex) {
             log.error("FhirValidationController::validateBundle - internal server error: ", ex);
-            throw ex;
+            var pd = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(500), ex.getMessage());
+            return ResponseEntity
+                    .internalServerError()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(pd);
         }
     }
 }

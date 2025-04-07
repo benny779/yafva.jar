@@ -113,6 +113,29 @@
 					</excludes>
 				</configuration>
 			</plugin>
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>3.1.0</version>
+				<executions>
+					<execution>
+						<phase>generate-sources</phase>
+						<configuration>
+							<target>
+								<mkdir dir="${basedir}/target" />
+								<copy todir="${basedir}/target">
+									<fileset dir="${basedir}/src/main/resources" includes="application.yaml" />
+								</copy>
+								<copy todir="${basedir}/docker">
+									<fileset dir="${basedir}/src/main/resources" includes="application.yaml" />
+								</copy>
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 </project>

@@ -1,0 +1,25 @@
+name: outburn-fhir-validator
+
+services:
+  validator:
+    restart: always
+    container_name: outburn-fhir-validator
+    image: outburn-fhir-validator
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile
+    volumes:
+      - ./fhir:/root/.fhir
+      - ./application.yaml:/app/application.yaml
+
+  haproxy:
+    restart: always
+    image: haproxy
+    container_name: haproxy
+    ports:
+      - 8082:8082
+      - 8404:8404
+    depends_on:
+      - validator
+    volumes:
+      - ./haproxy:/usr/local/etc/haproxy:ro

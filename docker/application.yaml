@@ -1,0 +1,27 @@
+server:
+  port: 8080
+  tomcat:
+    threads:
+      max: 50
+  servlet:
+    context-path: /
+spring:
+  application:
+    name: fhir-validator
+  mvc:
+    problemdetails:
+      enabled: true
+
+logging:
+  pattern:
+    console: '%d{yyyy-MM-dd HH:mm:ss} [%p] [%t] - %logger{36} - %msg%n'
+
+validator:
+  sv: '4.0.1'
+  ig:
+    - 'hl7.fhir.r4.examples#4.0.1'
+  tx-server: 'https://tx.fhir.org/r4'
+  tx-log:
+  locale: en
+  remove-text: true
+
