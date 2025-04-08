@@ -30,7 +30,7 @@ public class FhirValidator {
             return validateBundleR5(requestBundleR5, configuration);
 
         } else {
-            throw new IllegalArgumentException("Unsupported FHIR version: " + sv);
+            throw new UnsupportedOperationException("Unsupported FHIR version: " + sv);
         }
     }
 
@@ -54,7 +54,7 @@ public class FhirValidator {
 
         // Result
         var responseBundle = new org.hl7.fhir.r4.model.Bundle();
-        responseBundle.setType(Bundle.BundleType.BATCHRESPONSE);
+        responseBundle.setType(Bundle.BundleType.COLLECTION);
 
         // Validates every entry individually
         int i = 0;
@@ -107,7 +107,7 @@ public class FhirValidator {
 
         // Result
         var responseBundle = new org.hl7.fhir.r5.model.Bundle();
-        responseBundle.setType(org.hl7.fhir.r5.model.Bundle.BundleType.BATCHRESPONSE);
+        responseBundle.setType(org.hl7.fhir.r5.model.Bundle.BundleType.COLLECTION);
 
         // Validates every entry individually
         int i = 0;

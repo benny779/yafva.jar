@@ -1,5 +1,6 @@
 jdk/
 target/
+docker/fhir/packages
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
