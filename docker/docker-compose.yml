@@ -1,10 +1,10 @@
-name: outburn-fhir-validator
+name: yafva-jar
 
 services:
   validator:
     restart: always
-    container_name: outburn-fhir-validator
-    image: outburn-fhir-validator
+    container_name: yafva-jar
+    image: yafva-jar
     build:
       context: ../
       dockerfile: ./docker/Dockerfile
