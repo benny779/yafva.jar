@@ -11,7 +11,7 @@ RUN apt-get update && \
 
 RUN mvn clean package -DskipTests
 
-COPY target/outburn-fhir-validator-0.0.1.jar /app/outburn-fhir-validator.jar
+COPY target/outburn-fhir-validator-*.jar /app/outburn-fhir-validator.jar
 
 EXPOSE 8080
 
