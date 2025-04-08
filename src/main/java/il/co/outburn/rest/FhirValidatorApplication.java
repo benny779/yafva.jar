@@ -71,8 +71,10 @@ public class FhirValidatorApplication {
 
             var loggingService = new FhirLoggingService();
 
-            var builder = new ValidationEngine
-                    .ValidationEngineBuilder(null, null, fhirVersion, configuration.txServer, configuration.txLog, null, null, canRunWithoutTerminologyServer, loggingService, null, null)
+            var builder = new ValidationEngine.ValidationEngineBuilder()
+                    .withVersion(fhirVersion)
+                    .withTxServer(configuration.txServer, configuration.txLog, null, true)
+                    .withCanRunWithoutTerminologyServer(canRunWithoutTerminologyServer)
                     .withLoggingService(loggingService);
             var corePackage = VersionUtilities.packageForVersion(fhirVersion) + "#" + VersionUtilities.getCurrentVersion(fhirVersion);
 
