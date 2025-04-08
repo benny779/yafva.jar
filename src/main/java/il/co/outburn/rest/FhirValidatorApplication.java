@@ -32,8 +32,27 @@ public class FhirValidatorApplication {
     }
 
     public static void main(String[] args) {
+        readAndExecuteParams(args);
         FhirValidatorApplication.redirectStdStreamsToLog(true);
         SpringApplication.run(FhirValidatorApplication.class, args);
+    }
+
+    private static void readAndExecuteParams(String[] args) {
+        if (args.length == 0) return;
+
+        if (args[0].equals("-v") || args[0].equals("-version")) {
+            printVersions();
+        }
+
+        System.exit(0);
+    }
+
+    private static void printVersions() {
+        var appVersion = "Application version:\t" + ApplicationProperties.getAppVersion();
+        var hapiValidatorVersion = "HAPI Validator version:\t" + ApplicationProperties.getHapiValidatorVersion();
+
+        System.out.println(appVersion);
+        System.out.println(hapiValidatorVersion);
     }
 
     private void initializeDefaultValidationEngine() throws Throwable {

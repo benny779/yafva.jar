@@ -19,10 +19,11 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 
-@OpenAPIDefinition(info=@Info(title="FHIR REST API validator"))
+@OpenAPIDefinition(info = @Info(title = "FHIR REST API validator"))
 @RestController
 @Slf4j
 public class FhirValidationController {
@@ -30,10 +31,11 @@ public class FhirValidationController {
         log.info("FhirValidationController constructor called");
     }
 
-    @Autowired FhirValidatorConfiguration configuration;
+    @Autowired
+    FhirValidatorConfiguration configuration;
 
     @Hidden
-    @GetMapping(value = "/", produces = { MediaType.TEXT_HTML_VALUE})
+    @GetMapping(value = "/", produces = {MediaType.TEXT_HTML_VALUE})
     public String index() {
         if (configuration.txServer == null) configuration.txServer = "";
         if (configuration.txLog == null) configuration.txLog = "";
@@ -60,10 +62,10 @@ public class FhirValidationController {
     @Operation(summary = "Validates a FHIR resource",
             requestBody = @RequestBody(description = "A FHIR resource to validate, in JSON format", content = @Content(mediaType = "application/fhir+json", schema = @Schema(type = "object")), required = true),
             responses = {
-            @ApiResponse(responseCode = "200", description = "Success", content = @Content(mediaType = "application/json", schema = @Schema(type = "object"))),
-            @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content(schema = @Schema(implementation = ProblemDetail.class))) })
+                    @ApiResponse(responseCode = "200", description = "Success", content = @Content(mediaType = "application/json", schema = @Schema(type = "object"))),
+                    @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content(schema = @Schema(implementation = ProblemDetail.class)))})
     @Parameter(in = ParameterIn.QUERY, name = "profile", required = false, array = @ArraySchema(schema = @Schema(type = "string")), description = "Optional. A list of FHIR profile URLs")
-    @Parameter(in = ParameterIn.QUERY, name = "format", required = false, schema= @Schema(type = "string"), description = "Optional. Response format. Specify 'list' to return a list of messages, or specify 'outcome' to return validation results as an instance of FHIR OperationOutcome resource. Default value is 'outcome'.")
+    @Parameter(in = ParameterIn.QUERY, name = "format", required = false, schema = @Schema(type = "string"), description = "Optional. Response format. Specify 'list' to return a list of messages, or specify 'outcome' to return validation results as an instance of FHIR OperationOutcome resource. Default value is 'outcome'.")
     @PostMapping(value = "/validate", consumes = {"application/json", "text/json", "application/fhir+json"}, produces = {"application/json", "text/json", "application/fhir+json"})
     public ResponseEntity<?> validateRequest(HttpServletRequest request, @RequestParam(value = "profile", required = false) List<String> profiles, @RequestParam(value = "format", required = false) String format) throws Throwable {
         try {
@@ -80,9 +82,7 @@ public class FhirValidationController {
                         .ok()
                         .contentType(MediaType.parseMediaType("application/fhir+json"))
                         .body(result.resourceBytes);
-            }
-            else
-            {
+            } else {
                 var response = new FhirValidatorResponse();
                 response.messages = result.messages;
                 return ResponseEntity
@@ -104,7 +104,7 @@ public class FhirValidationController {
             requestBody = @RequestBody(description = "A FHIR bundle to validate, in JSON format", content = @Content(mediaType = "application/fhir+json", schema = @Schema(type = "object")), required = true),
             responses = {
                     @ApiResponse(responseCode = "200", description = "Success. Returned value is a FHIR Bundle of type batch-response.", content = @Content(mediaType = "application/json", schema = @Schema(type = "object"))),
-                    @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content(schema = @Schema(implementation = ProblemDetail.class))) })
+                    @ApiResponse(responseCode = "500", description = "Internal Server Error", content = @Content(schema = @Schema(implementation = ProblemDetail.class)))})
     @PostMapping(value = "/validateBundle", consumes = {"application/json", "text/json", "application/fhir+json"}, produces = {"application/json", "text/json", "application/fhir+json"})
     public ResponseEntity<?> validateBundle(HttpServletRequest request) throws Throwable {
         try {
@@ -125,5 +125,11 @@ public class FhirValidationController {
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(pd);
         }
+    }
+
+    @Operation(summary = "Get application and HAPI validator version information")
+    @GetMapping(value = "/version", produces = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<ApplicationProperties.VersionInfo> getVersion() {
+        return ResponseEntity.ok(new ApplicationProperties.VersionInfo());
     }
 }
