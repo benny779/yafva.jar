@@ -1,4 +1,5 @@
 # YAFVA.JAR
+![A Yafva Jar!](yafva-jar.png)
 ## (Yet Another) FHIR VAlidator JAva wRapper  
 ### Wrapped. Lit. Ready to validate.
 ---
