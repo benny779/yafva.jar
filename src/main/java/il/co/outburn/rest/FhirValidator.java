@@ -30,7 +30,7 @@ public class FhirValidator {
             return validateBundleR5(requestBundleR5, configuration);
 
         } else {
-            throw new IllegalArgumentException("Unsupported FHIR version: " + sv);
+            throw new UnsupportedOperationException("Unsupported FHIR version: " + sv);
         }
     }
 

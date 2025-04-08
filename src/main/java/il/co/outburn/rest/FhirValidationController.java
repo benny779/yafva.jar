@@ -90,6 +90,13 @@ public class FhirValidationController {
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(response);
             }
+        } catch (IllegalArgumentException ex) {
+            log.error("FhirValidationController::validate - bad request: ", ex);
+            var pd = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(400), ex.getMessage());
+            return ResponseEntity
+                    .badRequest()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(pd);
         } catch (Exception ex) {
             log.error("FhirValidationController::validate - internal server error: ", ex);
             var pd = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(500), ex.getMessage());
@@ -117,6 +124,13 @@ public class FhirValidationController {
                     .contentType(MediaType.parseMediaType("application/fhir+json"))
                     .body(result.resourceBytes);
 
+        } catch (IllegalArgumentException ex) {
+            log.error("FhirValidationController::validateBundle - bad request: ", ex);
+            var pd = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(400), ex.getMessage());
+            return ResponseEntity
+                    .badRequest()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(pd);
         } catch (Exception ex) {
             log.error("FhirValidationController::validateBundle - internal server error: ", ex);
             var pd = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(500), ex.getMessage());
