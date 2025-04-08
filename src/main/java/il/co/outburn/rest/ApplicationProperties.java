@@ -1,5 +1,7 @@
 package il.co.outburn.rest;
 
+import java.util.List;
+
 public class ApplicationProperties {
     public static String getAppVersion() {
         Package pkg = ApplicationProperties.class.getPackage();
@@ -11,8 +13,19 @@ public class ApplicationProperties {
         return org.hl7.fhir.utilities.VersionUtil.getVersion();
     }
 
-    public static class VersionInfo {
-        public String appVersion = getAppVersion();
-        public String hapiValidatorVersion = getHapiValidatorVersion();
+    public static class ApplicationInfo {
+        public String appVersion;
+        public String hapiValidatorVersion;
+        public String fhirVersion;
+        public List<String> implementationGuides;
+        public String terminologyServer;
+
+        public ApplicationInfo(FhirValidatorConfiguration configuration) {
+            appVersion = getAppVersion();
+            hapiValidatorVersion = getHapiValidatorVersion();
+            fhirVersion = configuration.getSv();
+            implementationGuides = configuration.ig;
+            terminologyServer = configuration.txServer;
+        }
     }
 }

@@ -127,9 +127,9 @@ public class FhirValidationController {
         }
     }
 
-    @Operation(summary = "Get application and HAPI validator version information")
-    @GetMapping(value = "/version", produces = {MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<ApplicationProperties.VersionInfo> getVersion() {
-        return ResponseEntity.ok(new ApplicationProperties.VersionInfo());
+    @Operation(summary = "Get application configuration and environment information")
+    @GetMapping(value = "/info", produces = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<ApplicationProperties.ApplicationInfo> getInfo() {
+        return ResponseEntity.ok(new ApplicationProperties.ApplicationInfo(configuration));
     }
 }
