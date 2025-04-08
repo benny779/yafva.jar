@@ -1,4 +1,4 @@
-Readme.md
+jdk/
 target/
 docker/fhir/packages
 !.mvn/wrapper/maven-wrapper.jar
