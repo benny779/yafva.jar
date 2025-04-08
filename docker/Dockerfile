@@ -11,8 +11,8 @@ RUN apt-get update && \
 
 RUN mvn clean package -DskipTests
 
-COPY target/outburn-fhir-validator-*.jar /app/outburn-fhir-validator.jar
+COPY target/yafva*.jar /app/yafva.jar
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "/app/outburn-fhir-validator.jar"]
+ENTRYPOINT ["java", "-jar", "/app/yafva.jar"]

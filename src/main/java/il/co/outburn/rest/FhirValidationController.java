@@ -44,7 +44,7 @@ public class FhirValidationController {
         if (fhirVersion == null)
             fhirVersion = "4.0.1";
         var result = new StringBuilder();
-        result.append("<html><head><title>Outburn FHIR REST API validator</title>" +
+        result.append("<html><head><title>YAFVA.JAR REST API</title>" +
                 "<link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css'>" +
                 "</head>");
         result.append("<body><div class='container'><h1 class='h1'>Outburn FHIR REST API validator</h1>");
