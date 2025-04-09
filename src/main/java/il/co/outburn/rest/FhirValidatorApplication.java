@@ -42,9 +42,8 @@ public class FhirValidatorApplication {
 
         if (args[0].equals("-v") || args[0].equals("-version")) {
             printVersions();
+            System.exit(0);
         }
-
-        System.exit(0);
     }
 
     private static void printVersions() {

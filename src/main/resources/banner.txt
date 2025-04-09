@@ -2,7 +2,7 @@
 =======================================
               YAFVA.JAR
               ---------
-        © Copyright Outburn Ltd.
+       (c) Copyright Outburn Ltd.
         2025 All Rights Reserved
          https://outburn.health
 =======================================
