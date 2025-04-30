@@ -56,6 +56,12 @@ Validate a bath Bundle and recieve the results as a Bundle of OperationOutcomes.
 
 ---
 
+## 📦 Installation Guides
+
+- [Linux Installation](./docs/INSTALL-linux.md)
+
+---
+
 ## 🔍 License
 
 This project is licensed under the **Apache License 2.0**.
