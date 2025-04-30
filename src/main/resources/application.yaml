@@ -7,7 +7,7 @@ server:
     context-path: /
 spring:
   application:
-    name: fhir-validator
+    name: jafva.jar
   mvc:
     problemdetails:
       enabled: true
