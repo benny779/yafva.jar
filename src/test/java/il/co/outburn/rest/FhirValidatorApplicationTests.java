@@ -169,7 +169,7 @@ class FhirValidatorApplicationTests {
     @Test
     void validateBundle_nullInput_shouldThrowException() {
         assertThrows(Exception.class, () ->
-            FhirValidator.validateBundle(null, configuration)
+            FhirValidator.validateBundle((byte[])null, configuration)
         );
     }
 
@@ -246,10 +246,7 @@ class FhirValidatorApplicationTests {
                     "type": "batch",
                     "entry": [
                         {
-                            "request": {
-                                "method": "POST",
-                                "url": "Patient"
-                            },
+                            "request": { "method": "POST", "url": "Patient" },
                             "fullUrl": "urn:uuid:9fe81a66-77ca-599a-bacd-77f590d2d35d",
                             "resource": {
                                 "resourceType": "Patient",
@@ -281,10 +278,7 @@ class FhirValidatorApplicationTests {
                     "type": "batch",
                     "entry": [
                         {
-                            "request": {
-                                "method": "POST",
-                                "url": "Patient"
-                            },
+                            "request": { "method": "POST", "url": "Patient" },
                             "fullUrl": "urn:uuid:9fe81a66-77ca-599a-bacd-77f590d2d35d",
                             "resource": {
                                 "resourceType": "Patient",
@@ -411,5 +405,58 @@ class FhirValidatorApplicationTests {
         assertEquals("urn:uuid:entry1", bundle.getEntry().get(0).getFullUrl());
         // Second entry should not have fullUrl
         assertNull(bundle.getEntry().get(1).getFullUrl());
+    }
+
+    @Test
+    void validateBundle_batchBundleWithSecondEntryWithoutResource_shouldThrowException() throws Exception {
+        String bundleStr = """
+            { "resourceType": "Bundle", "type": "batch", "entry": [
+                {
+                    "request": { "method": "POST", "url": "Patient" },
+                    "resource": { "resourceType": "Patient", "gender": "male" }
+                },
+                {
+                    "request": { "method": "POST", "url": "Patient" }
+                }
+            ] }
+        """;
+        byte[] bundleBytes = bundleStr.getBytes();
+        Exception exception = assertThrows(Exception.class, () ->
+            FhirValidator.validateBundle(bundleBytes, configuration)
+        );
+        assertTrue(exception.getMessage().contains("Bundle.entry[1].resource must be a JSON object"));
+    }
+
+    @Test
+    void validateBundle_batchBundleWithDuplicateFullUrl_shouldHandleFullUrls() throws Exception {
+        String bundleStr = """
+            { "resourceType": "Bundle", "type": "batch", "entry": [
+                {
+                    "request": { "method": "POST", "url": "Patient" },
+                    "resource": { "resourceType": "Patient", "gender": "male" }
+                },
+                {
+                    "fullUrl": "urn:uuid:not-duplicate",
+                    "request": { "method": "POST", "url": "Patient" },
+                    "resource": { "resourceType": "Patient", "gender": "male" }
+                },
+                {
+                    "fullUrl": "urn:uuid:duplicate",
+                    "request": { "method": "POST", "url": "Patient" },
+                    "resource": { "resourceType": "Patient", "gender": "male" }
+                },
+                {
+                    "fullUrl": "urn:uuid:duplicate",
+                    "request": { "method": "POST", "url": "Patient" },
+                    "resource": { "resourceType": "Patient", "gender": "male" }
+                }
+            ] }
+        """;
+        byte[] bundleBytes = bundleStr.getBytes();
+        Exception exception = assertThrows(Exception.class, () ->
+            FhirValidator.validateBundle(bundleBytes, configuration)
+        );
+        assertNotNull(exception);
+        assertTrue(exception.getMessage().contains("Bundle.entry[3].fullUrl must be unique"));
     }
 }
