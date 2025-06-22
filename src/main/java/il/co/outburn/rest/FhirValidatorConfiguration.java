@@ -25,10 +25,10 @@ public class FhirValidatorConfiguration {
         return sv;
     }
 
-    public Boolean isR4Ver() {
+    public boolean isR4Ver() {
         return VersionUtilities.isR4Ver(sv);
     }
-    public Boolean isR5Ver() {
+    public boolean isR5Ver() {
         return VersionUtilities.isR5Ver(sv);
     }
 
