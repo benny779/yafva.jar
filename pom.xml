@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>il.co.outburn</groupId>
 	<artifactId>yafva</artifactId>
-	<version>2.0.0</version>
+	<version>1.1.0</version>
 	<name>yafva.jar</name>
 	<description>Yet Another FHIR Validator Java Wrapper - REST API facade for the official HL7 FHIR validator</description>
 	<url/>
