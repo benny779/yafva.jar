@@ -64,6 +64,20 @@ public class FhirUtil {
         return org.hl7.fhir.r5.utils.OperationOutcomeUtilities.outcomeFromTextError(e.toString());
     }
 
+    public static boolean operationOutcomeHasErrorIssue(OperationOutcome outcome) {
+        if (!outcome.hasIssue()) {
+        return false;
+        }
+        
+        for (var item : outcome.getIssue()) {
+        if (!item.isEmpty() && item.hasSeverity() &&
+            (item.getSeverity() == OperationOutcome.IssueSeverity.FATAL || item.getSeverity() == OperationOutcome.IssueSeverity.ERROR)) {
+            return true;
+        }
+        }
+        return false;
+    }
+
     private static String getString(OperationOutcome resource) {
         int error = 0;
         int warn = 0;
@@ -94,6 +108,13 @@ public class FhirUtil {
             loc = (line >= 0 && col >= 0 ? "line " + line + ", col" + col : "??");
         }
         return "  " + issue.getSeverity().getDisplay() + " @ " + loc + " : " + issue.getDetails().getText();
+    }
+
+    public static Object bytesToResource(byte[] bytes, FhirValidatorConfiguration configuration) throws Exception {
+        if (bytes == null || bytes.length == 0) {
+            throw new IllegalArgumentException("Input bytes cannot be null or empty");
+        }
+        return configuration.isR4Ver() ? parserR4.parse(bytes) : parserR5.parse(bytes);
     }
 
     public static List<String> split(String value) {

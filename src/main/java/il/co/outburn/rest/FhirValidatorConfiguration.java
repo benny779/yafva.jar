@@ -25,6 +25,13 @@ public class FhirValidatorConfiguration {
         return sv;
     }
 
+    public boolean isR4Ver() {
+        return VersionUtilities.isR4Ver(sv);
+    }
+    public boolean isR5Ver() {
+        return VersionUtilities.isR5Ver(sv);
+    }
+
     /**
      * The IGs to load for validation. This is an optional field.
      */

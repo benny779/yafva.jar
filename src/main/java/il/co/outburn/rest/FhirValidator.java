@@ -1,122 +1,61 @@
 package il.co.outburn.rest;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.hl7.fhir.r4.model.Bundle;
-import org.hl7.fhir.r4.model.OperationOutcome;
 import org.hl7.fhir.r5.elementmodel.Manager;
 import org.hl7.fhir.r5.formats.IParser;
 import org.hl7.fhir.r5.formats.JsonParser;
-import org.hl7.fhir.utilities.VersionUtilities;
 import org.hl7.fhir.utilities.validation.ValidationMessage;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 public class FhirValidator {
 
     public static FhirValidationResult validateBundle(byte[] requestBundle, FhirValidatorConfiguration configuration) throws IOException {
-        var sv = configuration.getSv();
-
-        if (VersionUtilities.isR4Ver(sv)) {
-            var parserR4 = new org.hl7.fhir.r4.formats.JsonParser();
-            var requestBundleR4 = (org.hl7.fhir.r4.model.Bundle)parserR4.parse(requestBundle);
-            return validateBundleR4(requestBundleR4, configuration);
-
-        } else if (VersionUtilities.isR5Ver(sv)) {
-            var parserR5 = new org.hl7.fhir.r5.formats.JsonParser();
-            var requestBundleR5 = (org.hl7.fhir.r5.model.Bundle)parserR5.parse(requestBundle);
-            return validateBundleR5(requestBundleR5, configuration);
-
-        } else {
-            throw new UnsupportedOperationException("Unsupported FHIR version: " + sv);
+        if (!isFhirVersionSupported(configuration)) {
+            throw new UnsupportedOperationException("Unsupported FHIR version: " + configuration.getSv());
         }
+        
+        var gson = new Gson();
+        var jsonStr = new String(requestBundle, StandardCharsets.UTF_8);
+        var json = gson.fromJson(jsonStr, JsonObject.class);
+        return validateBundle(json, configuration);
     }
 
-    public static FhirValidationResult validateBundleR4(org.hl7.fhir.r4.model.Bundle requestBundle, FhirValidatorConfiguration configuration)
+    public static FhirValidationResult validateBundle(JsonObject requestBundle, FhirValidatorConfiguration configuration)
         throws IOException
     {
         // Checks
-        if (requestBundle == null) {
-            throw new IllegalArgumentException("Bundle cannot be null");
+        if (!isFhirVersionSupported(configuration)) {
+            throw new UnsupportedOperationException("Unsupported FHIR version: " + configuration.getSv());
         }
-        if (requestBundle.getType() != Bundle.BundleType.BATCH) {
-            throw new IllegalArgumentException("Bundle type must be of type BATCH");
-        }
-
+        ensureValidBundle(requestBundle);
+        
         // Engine
         var validationEngine = FhirValidationEngineCache.getValidationEngine();
 
         // Create parser
-        var parserR4 = new org.hl7.fhir.r4.formats.JsonParser();
-        var parserR5 = new org.hl7.fhir.r5.formats.JsonParser();
-
-        // Result
-        var responseBundle = new org.hl7.fhir.r4.model.Bundle();
-        responseBundle.setType(Bundle.BundleType.COLLECTION);
-
-        // Validates every entry individually
-        int i = 0;
-        for (var entry: requestBundle.getEntry()) {
-            var resource = entry.getResource();
-            if (resource == null) {
-                throw new IllegalArgumentException("Bundle.entry[" + i + "].resource cannot be null");
-            }
-            var resourceBytes = parserR4.composeBytes(resource);
-            org.hl7.fhir.r5.model.OperationOutcome ooR5;
-            var messages = new ArrayList<ValidationMessage>();
-            try {
-                ooR5 = validationEngine.validate(resourceBytes, Manager.FhirFormat.JSON, new ArrayList<String>(), messages);
-            }
-            catch (org.hl7.fhir.r5.utils.EOperationOutcome e) {
-                ooR5 = e.getOutcome();
-            }
-            var ooR5Bytes = parserR5.composeBytes(ooR5);
-            var ooR4 = (OperationOutcome)parserR4.parse(ooR5Bytes);
-            if (configuration.removeText != null && configuration.removeText) {
-                ooR4.setText(null);
-            }
-            var responseEntry = responseBundle.addEntry();
-            responseEntry.setFullUrl(entry.getFullUrl());
-            responseEntry.setResponse(new Bundle.BundleEntryResponseComponent());
-            responseEntry.getResponse().setOutcome(ooR4);
-        }
-
-        var result = new FhirValidationResult();
-        result.resourceBytes = parserR4.composeBytes(responseBundle);
-        return  result;
-    }
-
-    public static FhirValidationResult validateBundleR5(org.hl7.fhir.r5.model.Bundle requestBundle, FhirValidatorConfiguration configuration) throws IOException
-    {
-        // Checks
-        if (requestBundle == null) {
-            throw new IllegalArgumentException("Bundle cannot be null");
-        }
-        if (requestBundle.getType() != org.hl7.fhir.r5.model.Bundle.BundleType.BATCH &&
-            requestBundle.getType() != org.hl7.fhir.r5.model.Bundle.BundleType.TRANSACTION) {
-            throw new IllegalArgumentException("Bundle type must be of type BATCH or TRANSACTION");
-        }
-
-        // Engine
-        var validationEngine = FhirValidationEngineCache.getValidationEngine();
-
-        // Create parser
-        var parserR5 = new org.hl7.fhir.r5.formats.JsonParser();
+        var gson = new Gson();
+        var fhirJsonParser = createFhirJsonParser();
 
         // Result
         var responseBundle = new org.hl7.fhir.r5.model.Bundle();
         responseBundle.setType(org.hl7.fhir.r5.model.Bundle.BundleType.COLLECTION);
 
         // Validates every entry individually
-        int i = 0;
-        for (var requestEntry: requestBundle.getEntry()) {
-            var resource = requestEntry.getResource();
-            if (resource == null) {
-                throw new IllegalArgumentException("Bundle.entry[" + i + "].resource cannot be null");
-            }
-            var resourceBytes = parserR5.composeBytes(resource);
+        for (var entryElement: requestBundle.getAsJsonArray("entry")) {
+            var entry = entryElement.getAsJsonObject();
+            var resource = entry.get("resource");
+
+            var resourceBytes = gson.toJson(resource).getBytes();
             org.hl7.fhir.r5.model.OperationOutcome ooR5;
             var messages = new ArrayList<ValidationMessage>();
             try {
@@ -125,16 +64,21 @@ public class FhirValidator {
             catch (org.hl7.fhir.r5.utils.EOperationOutcome e) {
                 ooR5 = e.getOutcome();
             }
+
             if (configuration.getRemoveText() != null && configuration.getRemoveText()) {
                 ooR5.setText(null);
             }
+
             var responseEntry = responseBundle.addEntry();
-            responseEntry.setFullUrl(requestEntry.getFullUrl());
+            if (entry.has("fullUrl")) {
+                responseEntry.setFullUrl(entry.get("fullUrl").getAsString());
+            }
             responseEntry.setResponse(new org.hl7.fhir.r5.model.Bundle.BundleEntryResponseComponent());
             responseEntry.getResponse().setOutcome(ooR5);
         }
+
         var result = new FhirValidationResult();
-        result.resourceBytes = parserR5.composeBytes(responseBundle);
+        result.resourceBytes = fhirJsonParser.composeBytes(responseBundle);
         return result;
     }
 
@@ -153,8 +97,7 @@ public class FhirValidator {
 
         var validationEngine = FhirValidationEngineCache.getValidationEngine();
         var validationResult = new FhirValidationResult();
-        var parserR5 = new JsonParser();
-        parserR5.setOutputStyle(IParser.OutputStyle.NORMAL);
+        var fhirJsonParser = createFhirJsonParser();
         try {
             var messages = new ArrayList<ValidationMessage>();
             var operationOutcome = validationEngine.validate(resourceBytes, Manager.FhirFormat.JSON, internalProfileList, messages);
@@ -163,7 +106,7 @@ public class FhirValidator {
             }
 
             validationResult.messages = messages;
-            validationResult.resourceBytes = parserR5.composeBytes(operationOutcome);
+            validationResult.resourceBytes = fhirJsonParser.composeBytes(operationOutcome);
             long finish = System.currentTimeMillis();
             long timeElapsed = finish - start;
             log.info("FhirValidator::validateBytes - OK ({} bytes for {} ms)", resourceBytes.length, timeElapsed);
@@ -179,9 +122,69 @@ public class FhirValidator {
             message.setType(ValidationMessage.IssueType.EXCEPTION);
             message.setLevel(ValidationMessage.IssueSeverity.FATAL);
             message.setLocation(stackTrace);
-            validationResult.resourceBytes = parserR5.composeBytes(operationOutcome2);
+            validationResult.resourceBytes = fhirJsonParser.composeBytes(operationOutcome2);
             validationResult.messages.add(message);
         }
         return validationResult;
+    }
+
+    private static Boolean isFhirVersionSupported(FhirValidatorConfiguration configuration) {
+        return configuration.isR4Ver() || configuration.isR5Ver();
+    }
+
+    private static JsonParser createFhirJsonParser() {
+        var fhirJsonParser = new JsonParser();
+        fhirJsonParser.setOutputStyle(IParser.OutputStyle.NORMAL);
+        return fhirJsonParser;
+    }
+
+    private static void ensureValidBundle(JsonObject bundle) {
+        if (bundle == null || !bundle.isJsonObject()) {
+            throw new IllegalArgumentException("Request bundle must be a JSON object");
+        }
+
+        var bundleTypeJsonElement = bundle.get("type");
+        if (bundleTypeJsonElement == null || !bundleTypeJsonElement.isJsonPrimitive()) {
+            throw new IllegalArgumentException("Bundle.type must be a JSON primitive");
+        }
+        var bundleType = bundleTypeJsonElement.getAsString();
+        if (!bundleType.equals("batch")) {
+            throw new IllegalArgumentException("Bundle type must be of type BATCH");
+        }
+
+        var bundleEntriesJsonElement = bundle.get("entry");
+        if (bundleEntriesJsonElement != null && !bundleEntriesJsonElement.isJsonArray()) {
+            throw new IllegalArgumentException("Bundle.entry must be a JSON array");
+        }
+        if (bundleEntriesJsonElement == null) {
+            bundle.add("entry", new JsonArray());
+        }
+        
+        Set<String> fullUrls = new HashSet<>();
+        var entries = bundle.getAsJsonArray("entry");
+        for (int i = 0; i < entries.size(); i++) {
+            var entryElement = entries.get(i);
+            if (!entryElement.isJsonObject()) {
+                throw new IllegalArgumentException("Bundle.entry[" + i + "] must be a JSON object");
+            }
+
+            var entry = entryElement.getAsJsonObject();
+            
+            var resource = entry.get("resource");
+            if (resource == null || !resource.isJsonObject()) {
+                throw new IllegalArgumentException("Bundle.entry[" + i + "].resource must be a JSON object");
+            }
+
+            var fullUrl = entry.get("fullUrl");
+            if (fullUrl == null) {
+                continue;
+            }
+            if (!fullUrl.isJsonPrimitive()) {
+                throw new IllegalArgumentException("Bundle.entry[" + i + "].fullUrl must be a JSON primitive");
+            }
+            if (!fullUrls.add(fullUrl.getAsString())) {
+                throw new IllegalArgumentException("Bundle.entry[" + i + "].fullUrl must be unique");
+            }
+        }
     }
 }
