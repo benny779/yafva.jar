@@ -79,6 +79,7 @@ public class FhirValidatorApplication {
 
             log.info("FHIR version: {}", fhirVersion);
             log.info("Core package: {}", corePackage);
+            log.info("Additional IGs: {}", configuration.ig);
             log.info("Tx server: {}", configuration.txServer);
             log.info("Tx log: {}", configuration.txLog);
 
