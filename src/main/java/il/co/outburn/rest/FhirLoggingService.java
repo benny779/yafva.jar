@@ -15,9 +15,4 @@ public class FhirLoggingService implements ILoggingService {
     public void logDebugMessage(LogCategory logCategory, String s) {
         log.debug(s);
     }
-
-    @Override
-    public boolean isDebugLogging() {
-        return false;
-    }
 }
