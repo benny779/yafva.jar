@@ -2,7 +2,7 @@
 
 echo "Building YAFVA.JAR Docker image..."
 
-# Get version from pom.xml
+# Get version from pom.xml (the first version tag is the project version)
 VERSION=$(grep -m1 '<version>' pom.xml | sed 's/.*<version>\(.*\)<\/version>.*/\1/')
 
 echo "Building version: $VERSION"

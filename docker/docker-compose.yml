@@ -11,7 +11,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./fhir:/root/.fhir
+      - ./fhir/packages:/home/yafva/.fhir/packages
       - ./application.yaml:/app/application.yaml
     environment:
       - JAVA_OPTS=-Xmx2g -Xms512m

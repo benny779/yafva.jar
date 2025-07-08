@@ -3,8 +3,8 @@ REM Build script for YAFVA.JAR Docker image
 
 echo Building YAFVA.JAR Docker image...
 
-REM Get version from pom.xml
-for /f "tokens=2 delims=<>" %%i in ('findstr "<version>" pom.xml') do (
+REM Get version from pom.xml (the first version tag is the project version)
+for /f "tokens=3 delims=<>" %%i in ('findstr "<version>" pom.xml') do (
     set VERSION=%%i
     goto :found_version
 )

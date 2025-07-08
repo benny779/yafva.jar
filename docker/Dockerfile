@@ -32,8 +32,8 @@ RUN groupadd -r yafva && useradd -r -g yafva yafva
 # Copy the JAR file from builder stage
 COPY --from=builder /app/target/yafva*.jar /app/yafva.jar
 
-# Create FHIR cache directory
-RUN mkdir -p /root/.fhir && chown -R yafva:yafva /app /root/.fhir
+# Create FHIR cache directory - ensure it's in the correct location for yafva user
+RUN mkdir -p /home/yafva/.fhir/packages && chown -R yafva:yafva /app /home/yafva/.fhir
 
 # Switch to non-root user
 USER yafva
