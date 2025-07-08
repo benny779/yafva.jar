@@ -2,17 +2,17 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+	<groupId>il.co.outburn</groupId>
+	<artifactId>yafva</artifactId>
+	<version>1.1.0</version>
+	<name>yafva.jar</name>
+	<description>Yet Another FHIR Validator Java Wrapper - REST API facade for the official HL7 FHIR validator</description>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>3.4.4</version>
 		<relativePath/>
 	</parent>
-	<groupId>il.co.outburn</groupId>
-	<artifactId>yafva</artifactId>
-	<version>1.1.0</version>
-	<name>yafva.jar</name>
-	<description>Yet Another FHIR Validator Java Wrapper - REST API facade for the official HL7 FHIR validator</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -37,6 +37,11 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
 
 		<dependency>
@@ -79,6 +84,11 @@
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
 			<version>2.8.6</version>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate.validator</groupId>
+			<artifactId>hibernate-validator</artifactId>
+			<version>8.0.1.Final</version>
 		</dependency>
 	</dependencies>
 

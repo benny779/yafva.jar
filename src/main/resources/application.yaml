@@ -5,11 +5,26 @@ server:
       max: 50
   servlet:
     context-path: /
+
 spring:
   application:
-    name: jafva.jar
+    name: yafva-jar
   mvc:
     problemdetails:
+      enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+  health:
+    readiness-state:
+      enabled: true
+    liveness-state:
       enabled: true
 
 logging:
