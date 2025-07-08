@@ -48,10 +48,19 @@ spec:
           failureThreshold: 3
         volumeMounts:
         - name: fhir-cache
-          mountPath: /root/.fhir
+          mountPath: /home/yafva/.fhir
+        - name: config-volume
+          mountPath: /app/application.yaml
+          subPath: application.yaml
       volumes:
       - name: fhir-cache
         emptyDir: {}
+      - name: config-volume
+        configMap:
+          name: yafva-jar-config
+          items:
+          - key: application.yaml
+            path: application.yaml
 ---
 apiVersion: v1
 kind: Service
