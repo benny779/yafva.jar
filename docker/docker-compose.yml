@@ -4,22 +4,20 @@ services:
   validator:
     restart: always
     container_name: yafva-jar
-    image: yafva-jar
+    image: yafva-jar:latest
     build:
       context: ../
       dockerfile: ./docker/Dockerfile
+    ports:
+      - "8080:8080"
     volumes:
       - ./fhir:/root/.fhir
       - ./application.yaml:/app/application.yaml
-
-  haproxy:
-    restart: always
-    image: haproxy
-    container_name: haproxy
-    ports:
-      - 8082:8082
-      - 8404:8404
-    depends_on:
-      - validator
-    volumes:
-      - ./haproxy:/usr/local/etc/haproxy:ro
+    environment:
+      - JAVA_OPTS=-Xmx2g -Xms512m
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s

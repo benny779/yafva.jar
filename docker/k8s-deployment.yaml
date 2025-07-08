@@ -1,0 +1,118 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: yafva-jar
+  labels:
+    app: yafva-jar
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: yafva-jar
+  template:
+    metadata:
+      labels:
+        app: yafva-jar
+    spec:
+      containers:
+      - name: yafva-jar
+        image: yafva-jar:latest
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        env:
+        - name: JAVA_OPTS
+          value: "-Xmx2g -Xms512m"
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "3Gi"
+            cpu: "2000m"
+        livenessProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8080
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        volumeMounts:
+        - name: fhir-cache
+          mountPath: /root/.fhir
+      volumes:
+      - name: fhir-cache
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: yafva-jar-service
+  labels:
+    app: yafva-jar
+spec:
+  selector:
+    app: yafva-jar
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+    protocol: TCP
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: yafva-jar-config
+data:
+  application.yaml: |
+    server:
+      port: 8080
+      tomcat:
+        threads:
+          max: 50
+      servlet:
+        context-path: /
+
+    spring:
+      application:
+        name: yafva-jar
+      mvc:
+        problemdetails:
+          enabled: true
+
+    management:
+      endpoints:
+        web:
+          exposure:
+            include: health,info,metrics,prometheus
+      endpoint:
+        health:
+          show-details: when-authorized
+      health:
+        readiness-state:
+          enabled: true
+        liveness-state:
+          enabled: true
+
+    logging:
+      pattern:
+        console: '%d{yyyy-MM-dd HH:mm:ss} [%p] [%t] - %logger{36} - %msg%n'
+
+    validator:
+      sv: '4.0.1'
+      ig:
+        - 'hl7.fhir.r4.examples#4.0.1'
+      tx-server: 'https://tx.fhir.org/r4'
+      tx-log:
+      locale: en
+      remove-text: true
