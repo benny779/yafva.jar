@@ -6,7 +6,7 @@ services:
     container_name: yafva-jar
     image: yafva-jar:latest
     build:
-      context: ../
+      context: ..
       dockerfile: ./docker/Dockerfile
     ports:
       - "8080:8080"

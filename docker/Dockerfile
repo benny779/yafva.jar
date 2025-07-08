@@ -17,7 +17,7 @@ RUN apt-get update && \
     mvn clean package -DskipTests
 
 # Production stage
-FROM openjdk:21-jre-slim
+FROM eclipse-temurin:21-jre
 
 WORKDIR /app
 
