@@ -5,14 +5,13 @@
    - `yafvajar.exe`
    - `yafvajar.xml`
    - `application.yaml`
-2. Alternatively, you can download the latest version of [WinSW](https://github.com/winsw/winsw/releases)
-   and rename the binary to `yafvajar.exe`.
-3. Ensure you have all three files: `yafvajar.exe`, `yafvajar.xml`, and `application.yaml`.
+2. Download the `yafva.jar` file from the [latest release](https://github.com/Outburn-IL/yafva.jar/releases).
+3. Ensure you have all four files: `yafvajar.exe`, `yafvajar.xml`, `application.yaml`, and `yafva.jar`.
 
 > **Note:** This guide uses WinSW version `2.12.0.0`.
 
 ## Installation Steps
-1. Place the `yafvajar.exe`, `yafvajar.xml`, and `application.yaml` files
+1. Place the `yafvajar.exe`, `yafvajar.xml`, `application.yaml`, and `yafva.jar` files
    in the same directory (e.g., `C:\yafva-validator`).
 2. Open a command prompt with administrative privileges.
 3. Navigate to the directory where the files are located.
