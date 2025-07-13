@@ -1,0 +1,49 @@
+server:
+  port: 8080
+  tomcat:
+    threads:
+      max: 50
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: yafva-jar
+  mvc:
+    problemdetails:
+      enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+  health:
+    readiness-state:
+      enabled: true
+    liveness-state:
+      enabled: true
+
+logging:
+  pattern:
+    console: '%d{yyyy-MM-dd HH:mm:ss} [%p] [%t] - %logger{36} - %msg%n'
+    file: '%d{yyyy-MM-dd HH:mm:ss} [%p] [%t] - %logger{36} - %msg%n'
+  file:
+    name: 'logs/log.log'
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      max-history: 30
+
+validator:
+  sv: '4.0.1'
+  ig:
+    - 'il.core.fhir.r4#0.17.5'
+  tx-server: 'https://tx.fhir.org/r4'
+  tx-log:
+  locale: en
+  remove-text: true
+
