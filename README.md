@@ -59,6 +59,7 @@ Validate a bath Bundle and recieve the results as a Bundle of OperationOutcomes.
 ## 📦 Installation Guides
 
 - [Linux Installation](./docs/INSTALL-linux.md)
+- [Windown Installation](./docs/INSTALL-windows.md)
 
 ---
 
