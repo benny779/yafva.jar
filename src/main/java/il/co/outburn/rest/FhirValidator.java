@@ -143,6 +143,15 @@ public class FhirValidator {
             throw new IllegalArgumentException("Request bundle must be a JSON object");
         }
 
+        var resouceTypeJsonElement = bundle.get("resourceType");
+        if (resouceTypeJsonElement == null || !resouceTypeJsonElement.isJsonPrimitive()) {
+            throw new IllegalArgumentException("Bundle.resourceType must be a JSON primitive");
+        }
+        var resourceType = resouceTypeJsonElement.getAsString();
+        if (!resourceType.equals("Bundle")) {
+            throw new IllegalArgumentException("Bundle resourceType must be of type BUNDLE");
+        }
+
         var bundleTypeJsonElement = bundle.get("type");
         if (bundleTypeJsonElement == null || !bundleTypeJsonElement.isJsonPrimitive()) {
             throw new IllegalArgumentException("Bundle.type must be a JSON primitive");
