@@ -1,5 +1,18 @@
 package il.co.outburn.rest;
 
+import java.io.IOException;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
+import org.springframework.http.ProblemDetail;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,14 +26,6 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.MediaType;
-import org.springframework.http.ProblemDetail;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 
 @OpenAPIDefinition(info = @Info(title = "FHIR REST API validator"))
@@ -143,7 +148,7 @@ public class FhirValidationController {
 
     @Operation(summary = "Get application configuration and environment information")
     @GetMapping(value = "/info", produces = {MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<ApplicationProperties.ApplicationInfo> getInfo() {
+    public ResponseEntity<ApplicationProperties.ApplicationInfo> getInfo() throws IOException {
         return ResponseEntity.ok(new ApplicationProperties.ApplicationInfo(configuration));
     }
 }

@@ -1,5 +1,6 @@
 package il.co.outburn.rest;
 
+import java.io.IOException;
 import java.util.List;
 
 public class ApplicationProperties {
@@ -18,13 +19,19 @@ public class ApplicationProperties {
         public String hapiValidatorVersion;
         public String fhirVersion;
         public List<String> implementationGuides;
+        public List<String> loadedPackages;
+        public String chacheFolder;
         public String terminologyServer;
 
-        public ApplicationInfo(FhirValidatorConfiguration configuration) {
+        public ApplicationInfo(FhirValidatorConfiguration configuration) throws IOException {
+            var validationEngine = FhirValidationEngineCache.getValidationEngine();
+
             appVersion = getAppVersion();
             hapiValidatorVersion = getHapiValidatorVersion();
             fhirVersion = configuration.getSv();
             implementationGuides = configuration.ig;
+            loadedPackages = validationEngine.getContext().getLoadedPackages();
+            chacheFolder = validationEngine.getPcm().getFolder();
             terminologyServer = configuration.txServer;
         }
     }

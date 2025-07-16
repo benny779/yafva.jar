@@ -1,14 +1,15 @@
 package il.co.outburn.rest;
-
-import lombok.extern.slf4j.Slf4j;
 import org.hl7.fhir.r5.utils.validation.constants.ReferenceValidationPolicy;
 import org.hl7.fhir.utilities.VersionUtilities;
 import org.hl7.fhir.validation.IgLoader;
 import org.hl7.fhir.validation.ValidationEngine;
 import org.hl7.fhir.validation.instance.advisor.BasePolicyAdvisorForFullValidation;
+import org.hl7.fhir.validation.service.utils.ValidationLevel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+import lombok.extern.slf4j.Slf4j;
 
 @SpringBootApplication
 @Slf4j
@@ -87,8 +88,20 @@ public class FhirValidatorApplication {
 
             var newValidationEngine = builder.fromSource(corePackage);
             newValidationEngine.setDebug(true);
-            newValidationEngine.setDisplayWarnings(true);
             newValidationEngine.setPolicyAdvisor(new BasePolicyAdvisorForFullValidation(ReferenceValidationPolicy.IGNORE));
+
+            newValidationEngine.setAnyExtensionsAllowed(configuration.anyExtensionsAllowed);
+            newValidationEngine.setUnknownCodeSystemsCauseErrors(configuration.unknownCodeSystemsCauseErrors);
+            if (configuration.extensionDomains != null && !configuration.extensionDomains.isEmpty()) {
+                newValidationEngine.getExtensionDomains().addAll(configuration.extensionDomains);
+            }
+            newValidationEngine.setAllowExampleUrls(configuration.allowExampleUrls);
+            newValidationEngine.setDisplayWarnings(configuration.displayWarnings);
+            newValidationEngine.setWantInvariantInMessage(configuration.wantInvariantInMessage);
+            newValidationEngine.setLevel(ValidationLevel.fromCode(configuration.level));
+            newValidationEngine.setCrumbTrails(configuration.verbose);
+            newValidationEngine.setShowTimes(configuration.showTimes);
+
             IgLoader igLoader = newValidationEngine.getIgLoader();
 
             if (configuration.ig != null) {

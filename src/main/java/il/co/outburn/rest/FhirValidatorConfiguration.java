@@ -1,12 +1,14 @@
 package il.co.outburn.rest;
 
-import lombok.Getter;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hl7.fhir.utilities.VersionUtilities;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
 
 @Component
 @ConfigurationProperties("validator")
@@ -15,10 +17,8 @@ public class FhirValidatorConfiguration {
     /**
      * The FHIR version to use for validation. This is a mandatory field.
      */
+    @Setter
     String sv;
-    public void setSv(String value) {
-        sv = value;
-    }
     public String getSv() {
         if (sv == null || sv.isBlank() || sv.isEmpty())
             return "4.0.1";
@@ -45,30 +45,93 @@ public class FhirValidatorConfiguration {
      * The terminology server URL to use for validation. This is an optional field.
      */
     @Getter
+    @Setter
     String txServer;
-    public void setTxServer(String value) {
-        txServer = value;
-    }
 
     /**
      * The terminology server log file to use for validation. This is an optional field.
      */
     @Getter
+    @Setter
     String txLog;
-
-    public void setTxLog(String value) {
-        txLog = value;
-    }
 
     /**
      * Removes OperationOutcome text from the validation result. This is an optional field.
      */
     @Getter
+    @Setter
     Boolean removeText = false;
 
-    public void setRemoveText(Boolean value) {
-        removeText = value;
-    }
+    /**
+     * Allow all unknown extensions. By default, unknown extensions are prohibited.
+     */
+    @Getter
+    @Setter
+    Boolean anyExtensionsAllowed = false;
+
+    /**
+     * Extension domains to allow. This allows extensions from specified domains.
+     * Extensions from specified domains are allowed by matching the URL for the extension.
+     */
+    @Getter
+    @Setter
+    List<String> extensionDomains = new ArrayList<>();
+
+    /**
+     * When an unknown code system is encountered, determines whether this causes an error or warning.
+     * By default, unknown code systems cause warnings.
+     */
+    @Getter
+    @Setter
+    Boolean unknownCodeSystemsCauseErrors = false;
+
+    /**
+     * Allow URLs from example.org. By default, references to example.org are marked as errors.
+     */
+    @Getter
+    @Setter
+    Boolean allowExampleUrls = false;
+
+    /**
+     * When the validator encounters a coding or CodeableConcept where the display
+     * value isn't consistent with the display(s) defined by the code systems, this controls
+     * whether it's treated as an error or warning. By default, wrong display names are errors.
+     */
+    @Getter
+    @Setter
+    Boolean displayWarnings = true;
+
+    /**
+     * Control whether the FHIRPath for invariants is included in the message.
+     * By default, FHIR Path is omitted for easier end-user consumption.
+     */
+    @Getter
+    @Setter
+    Boolean wantInvariantInMessage = false;
+
+    /**
+     * Set the minimum level for validation messages. Valid values: hints, warnings, errors.
+     * Default is hints (report all hints, warnings and errors).
+     */
+    @Getter
+    @Setter
+    String level = "errors";
+
+    /**
+     * When verbose is set, the validator will create hints against the resources
+     * to explain which profiles it has validated the resource against, and why.
+     */
+    @Getter
+    @Setter
+    Boolean verbose = false;
+
+    /**
+     * When show-times is set, the validator will produce a line in the output
+     * summarizing how long some internal processes took.
+     */
+    @Getter
+    @Setter
+    Boolean showTimes = false;
 
     /**
      * Returns the core package for the specified FHIR version.

@@ -39,11 +39,37 @@ logging:
       max-history: 30
 
 validator:
+  # The FHIR version to use for validation. This is a mandatory field.
   sv: '4.0.1'
+  # The IGs to load for validation. This is an optional field.
   ig:
     - 'il.core.fhir.r4#0.17.5'
+  # The terminology server URL to use for validation. This is an optional field.
   tx-server: 'https://tx.fhir.org/r4'
+  # The terminology server log file to use for validation. This is an optional field.
   tx-log:
+  # Specifies the locale/language of the validation result messages
   locale: en
+  # Removes OperationOutcome text from the validation result. This is an optional field.
   remove-text: true
+  # Allow all unknown extensions. By default, unknown extensions are prohibited.
+  any-extensions-allowed: false
+  # Extension domains to allow. Extensions from specified domains are allowed by matching the URL.
+  extension-domains:
+    # - "http://example.org/extensions"
+  # When an unknown code system is encountered, determines whether this causes an error or warning.
+  unknown-code-systems-cause-errors: false
+  # Allow URLs from example.org. By default, references to example.org are marked as errors.
+  allow-example-urls: false
+  # When the validator encounters a coding where the display value isn't consistent with the display(s) 
+  # defined by the code systems, this controls whether it's treated as an error or warning.
+  display-warnings: true
+  # Control whether the FHIRPath for invariants is included in the message.
+  want-invariant-in-message: false
+  # Set the minimum level for validation messages. Valid values: hints, warnings, errors.
+  level: hints
+  # When verbose is set, the validator will create hints against the resources
+  verbose: false
+  # When show-times is set, the validator will produce a line in the output
+  show-times: false
 
