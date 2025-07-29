@@ -1,4 +1,5 @@
 package il.co.outburn.rest;
+import org.hl7.fhir.r5.utils.validation.constants.BestPracticeWarningLevel;
 import org.hl7.fhir.r5.utils.validation.constants.ReferenceValidationPolicy;
 import org.hl7.fhir.utilities.VersionUtilities;
 import org.hl7.fhir.validation.IgLoader;
@@ -63,54 +64,10 @@ public class FhirValidatorApplication {
             if (configuration.txLog != null && configuration.txLog.isEmpty())
                 configuration.txLog = null;
 
-            var fhirVersion = configuration.sv;
-            if (fhirVersion == null)
-                fhirVersion = "4.0.1";
-
             boolean canRunWithoutTerminologyServer = (configuration.txServer == null);
-
             var loggingService = new FhirLoggingService();
 
-            var builder = new ValidationEngine.ValidationEngineBuilder()
-                    .withVersion(fhirVersion)
-                    .withTxServer(configuration.txServer, configuration.txLog, null, true)
-                    .withCanRunWithoutTerminologyServer(canRunWithoutTerminologyServer)
-                    .withLoggingService(loggingService);
-            var corePackage = VersionUtilities.packageForVersion(fhirVersion) + "#" + VersionUtilities.getCurrentVersion(fhirVersion);
-
-            log.info("FHIR version: {}", fhirVersion);
-            log.info("Core package: {}", corePackage);
-            log.info("Tx server: {}", configuration.txServer);
-            log.info("Tx log: {}", configuration.txLog);
-            if (configuration.ig != null && !configuration.ig.isEmpty()) {
-                log.info("Additional IGs: {}", configuration.ig);
-            }
-
-            var newValidationEngine = builder.fromSource(corePackage);
-            newValidationEngine.setDebug(true);
-            newValidationEngine.setPolicyAdvisor(new BasePolicyAdvisorForFullValidation(ReferenceValidationPolicy.IGNORE));
-
-            newValidationEngine.setAnyExtensionsAllowed(configuration.anyExtensionsAllowed);
-            newValidationEngine.setUnknownCodeSystemsCauseErrors(configuration.unknownCodeSystemsCauseErrors);
-            if (configuration.extensionDomains != null && !configuration.extensionDomains.isEmpty()) {
-                newValidationEngine.getExtensionDomains().addAll(configuration.extensionDomains);
-            }
-            newValidationEngine.setAllowExampleUrls(configuration.allowExampleUrls);
-            newValidationEngine.setDisplayWarnings(configuration.displayWarnings);
-            newValidationEngine.setWantInvariantInMessage(configuration.wantInvariantInMessage);
-            newValidationEngine.setLevel(ValidationLevel.fromCode(configuration.level));
-            newValidationEngine.setCrumbTrails(configuration.verbose);
-            newValidationEngine.setShowTimes(configuration.showTimes);
-
-            IgLoader igLoader = newValidationEngine.getIgLoader();
-
-            if (configuration.ig != null) {
-                for (String ig : configuration.ig) {
-                    if (ig != null) {
-                        igLoader.loadIg(newValidationEngine.getIgs(), newValidationEngine.getBinaries(), ig, true);
-                    }
-                }
-            }
+            var newValidationEngine = createValidationEngine(configuration.getSv(), canRunWithoutTerminologyServer, loggingService);
             newValidationEngine.prepare();
             log.info("Default ValidationEngine is initialized.");
             FhirValidationEngineCache.setDefaultValidationEngine(newValidationEngine);
@@ -120,4 +77,59 @@ public class FhirValidatorApplication {
         }
     }
 
+    private ValidationEngine createValidationEngine(String fhirVersion, boolean canRunWithoutTerminologyServer, FhirLoggingService loggingService) throws Exception {
+        var builder = new ValidationEngine.ValidationEngineBuilder()
+                .withVersion(fhirVersion)
+                .withTxServer(configuration.txServer, configuration.txLog, null, true)
+                .withCanRunWithoutTerminologyServer(canRunWithoutTerminologyServer)
+                .withLoggingService(loggingService);
+        var corePackage = VersionUtilities.packageForVersion(fhirVersion) + "#" + VersionUtilities.getCurrentVersion(fhirVersion);
+
+        log.info("Core package: {}", corePackage);
+        configuration.getAllProperties().forEach(log::info);
+
+        var validationEngine = builder.fromSource(corePackage);
+        validationEngine.setDebug(true);
+        validationEngine.setPolicyAdvisor(new BasePolicyAdvisorForFullValidation(ReferenceValidationPolicy.IGNORE));
+
+        validationEngine.setAnyExtensionsAllowed(configuration.anyExtensionsAllowed);
+        validationEngine.setUnknownCodeSystemsCauseErrors(configuration.unknownCodeSystemsCauseErrors);
+        if (configuration.extensionDomains != null && !configuration.extensionDomains.isEmpty()) {
+            validationEngine.getExtensionDomains().addAll(configuration.extensionDomains);
+        }
+
+        validationEngine.setAllowExampleUrls(configuration.allowExampleUrls);
+        validationEngine.setDisplayWarnings(configuration.displayWarnings);
+        validationEngine.setWantInvariantInMessage(configuration.wantInvariantInMessage);
+        validationEngine.setLevel(ValidationLevel.fromCode(configuration.level));
+        validationEngine.setBestPracticeLevel(readBestPractice(configuration.bestPracticeLevel));
+        validationEngine.setCrumbTrails(configuration.verbose);
+        validationEngine.setShowTimes(configuration.showTimes);
+
+        IgLoader igLoader = validationEngine.getIgLoader();
+        if (configuration.ig != null) {
+            for (String ig : configuration.ig) {
+                if (ig != null) {
+                    igLoader.loadIg(validationEngine.getIgs(), validationEngine.getBinaries(), ig, true);
+                }
+            }
+        }
+
+        return validationEngine;
+    }
+
+    private static BestPracticeWarningLevel readBestPractice(String s) {
+        if (s == null) return BestPracticeWarningLevel.Warning;
+        switch (s.toLowerCase()) {
+            case "warning" : return BestPracticeWarningLevel.Warning;
+            case "error" : return BestPracticeWarningLevel.Error;
+            case "hint" : return BestPracticeWarningLevel.Hint;
+            case "ignore" : return BestPracticeWarningLevel.Ignore;
+            case "w" : return BestPracticeWarningLevel.Warning;
+            case "e" : return BestPracticeWarningLevel.Error;
+            case "h" : return BestPracticeWarningLevel.Hint;
+            case "i" : return BestPracticeWarningLevel.Ignore;
+        }
+        throw new Error("The best-practice level '" + s + "' is not valid");
+    }
 }

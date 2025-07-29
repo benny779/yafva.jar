@@ -99,7 +99,7 @@ public class FhirValidatorConfiguration {
      */
     @Getter
     @Setter
-    Boolean displayWarnings = true;
+    Boolean displayWarnings = false;
 
     /**
      * Control whether the FHIRPath for invariants is included in the message.
@@ -134,6 +134,17 @@ public class FhirValidatorConfiguration {
     Boolean showTimes = false;
 
     /**
+     * Controls how best practice rules are handled. Best practice rules are constraints
+     * in the specification that are warnings but marked as 'best practice'. These are 
+     * typically rules that the committees believe should be followed, but cannot be due 
+     * to legacy data constraints.
+     * Valid values: hint, warning, error, ignore. Default is warning.
+     */
+    @Getter
+    @Setter
+    String bestPracticeLevel = "warning";
+
+    /**
      * Returns the core package for the specified FHIR version.
      */
     public String getCorePackage() {
@@ -143,5 +154,28 @@ public class FhirValidatorConfiguration {
         var corePackage = VersionUtilities.packageForVersion(fhirVersion) + "#" + VersionUtilities.getCurrentVersion(fhirVersion);
 
         return corePackage;
+    }
+
+    /**
+     * Returns all properties of the configuration.
+     */
+    public List<String> getAllProperties() {
+        return List.of(
+            "FHIR Version: " + getSv(),
+            "Implementation Guides: " + ig,
+            "Terminology Server URL: " + txServer,
+            "Terminology Server Log: " + txLog,
+            "Remove OperationOutcome Text: " + removeText,
+            "Allow Any Extensions: " + anyExtensionsAllowed,
+            "Allowed Extension Domains: " + extensionDomains,
+            "Unknown Code Systems Cause Errors: " + unknownCodeSystemsCauseErrors,
+            "Allow Example URLs: " + allowExampleUrls,
+            "Display Warnings Instead of Errors: " + displayWarnings,
+            "Include FHIRPath in Invariant Messages: " + wantInvariantInMessage,
+            "Validation Level: " + level,
+            "Best Practice Level: " + bestPracticeLevel,
+            "Verbose Output: " + verbose,
+            "Show Processing Times: " + showTimes
+        );
     }
 }

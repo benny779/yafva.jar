@@ -63,11 +63,13 @@ validator:
   allow-example-urls: false
   # When the validator encounters a coding where the display value isn't consistent with the display(s) 
   # defined by the code systems, this controls whether it's treated as an error or warning.
-  display-warnings: true
+  display-warnings: false
   # Control whether the FHIRPath for invariants is included in the message.
   want-invariant-in-message: false
   # Set the minimum level for validation messages. Valid values: hints, warnings, errors.
   level: hints
+  # Controls how best practice rules are handled. Valid values: hint, warning, error, ignore.
+  best-practice-level: warning
   # When verbose is set, the validator will create hints against the resources
   verbose: false
   # When show-times is set, the validator will produce a line in the output
