@@ -20,7 +20,7 @@ public class ApplicationProperties {
         public String fhirVersion;
         public List<String> implementationGuides;
         public List<String> loadedPackages;
-        public String chacheFolder;
+        public String cacheFolder;
         public String terminologyServer;
 
         public ApplicationInfo(FhirValidatorConfiguration configuration) throws IOException {
@@ -31,7 +31,7 @@ public class ApplicationProperties {
             fhirVersion = configuration.getSv();
             implementationGuides = configuration.ig;
             loadedPackages = validationEngine.getContext().getLoadedPackages();
-            chacheFolder = validationEngine.getPcm().getFolder();
+            cacheFolder = validationEngine.getPcm().getFolder();
             terminologyServer = configuration.txServer;
         }
     }
