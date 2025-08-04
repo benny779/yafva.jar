@@ -71,13 +71,13 @@ public class FhirValidationController {
             summary = "Validates a FHIR resource",
             requestBody = @RequestBody(
                 description = "A FHIR resource to validate, in JSON format",
-                content = @Content(mediaType = CONTENT_TYPE_APPLICATION_FHIR_JSON_UTF8, schema = @Schema(type = "object")),
+                content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(type = "object")),
                 required = true),
                 responses = {
                     @ApiResponse(
                         responseCode = "200",
                         description = "Success",
-                        content = @Content(mediaType = MediaType.APPLICATION_JSON_UTF8_VALUE, schema = @Schema(type = "object"))),
+                        content = @Content(mediaType = CONTENT_TYPE_APPLICATION_FHIR_JSON_UTF8, schema = @Schema(type = "object"))),
                     @ApiResponse(
                         responseCode = "500",
                         description = "Internal Server Error",
@@ -95,7 +95,7 @@ public class FhirValidationController {
     @PostMapping(
             value = "/validate",
             consumes = {MediaType.APPLICATION_JSON_VALUE, "text/json", CONTENT_TYPE_APPLICATION_FHIR_JSON},
-            produces = {MediaType.APPLICATION_JSON_UTF8_VALUE, "text/json;charset=UTF-8", CONTENT_TYPE_APPLICATION_FHIR_JSON_UTF8})
+            produces = {MediaType.APPLICATION_JSON_VALUE, CONTENT_TYPE_APPLICATION_FHIR_JSON, MediaType.APPLICATION_PROBLEM_JSON_VALUE})
     public ResponseEntity<?> validateRequest(
             HttpServletRequest request,
             @RequestParam(value = "profile", required = false) List<String> profiles,
@@ -119,7 +119,7 @@ public class FhirValidationController {
                 response.messages = result.messages;
                 return ResponseEntity
                         .ok()
-                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .contentType(MediaType.APPLICATION_JSON)
                         .body(response);
             }
         } catch (IllegalArgumentException ex) {
@@ -149,7 +149,7 @@ public class FhirValidationController {
                     @ApiResponse(
                         responseCode = "200",
                         description = "Success. Returned value is a FHIR Bundle of type collection.",
-                        content = @Content(mediaType = MediaType.APPLICATION_JSON_UTF8_VALUE, schema = @Schema(type = "object"))),
+                        content = @Content(mediaType = CONTENT_TYPE_APPLICATION_FHIR_JSON_UTF8, schema = @Schema(type = "object"))),
                     @ApiResponse(
                         responseCode = "500",
                         description = "Internal Server Error",
@@ -157,7 +157,7 @@ public class FhirValidationController {
     @PostMapping(
             value = "/validateBundle",
             consumes = {MediaType.APPLICATION_JSON_VALUE, "text/json", CONTENT_TYPE_APPLICATION_FHIR_JSON},
-            produces = {MediaType.APPLICATION_JSON_UTF8_VALUE, "text/json;charset=UTF-8", CONTENT_TYPE_APPLICATION_FHIR_JSON_UTF8})
+            produces = {CONTENT_TYPE_APPLICATION_FHIR_JSON, MediaType.APPLICATION_PROBLEM_JSON_VALUE})
     public ResponseEntity<?> validateBundle(HttpServletRequest request) throws Throwable {
         try {
             log.info("FhirValidationController::validateBundle called");
