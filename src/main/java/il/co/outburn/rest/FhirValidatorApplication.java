@@ -120,7 +120,7 @@ public class FhirValidatorApplication {
             return BestPracticeWarningLevel.Error;
         }
         if (Utilities.existsInList(s, "i", "ignore")) {
-            return BestPracticeWarningLevel.Error;
+            return BestPracticeWarningLevel.Ignore;
         }
         return BestPracticeWarningLevel.Warning;
     }
