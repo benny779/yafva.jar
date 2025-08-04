@@ -103,6 +103,8 @@ validator:
   remove-text: true
 ```
 
+> **Note:** For detailed information about all configuration options, refer to the [Configuration Reference](./CONFIGURATION.md).
+
 ---
 
 #### 3. Create the Startup Script
