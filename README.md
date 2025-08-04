@@ -30,6 +30,9 @@ validator:
     - 'hl7.fhir.us.core#6.1.0'
   tx-server:
 ```
+
+For detailed information about all available configuration options, see the [Configuration Reference](./docs/CONFIGURATION.md).
+
 ### ⚙️ Recommended server.tomcat.threads configuration
 As a baseline it is recommended to start with:  
 `min-spare`: ~0.75 * CPU's  
@@ -59,7 +62,8 @@ Validate a bath Bundle and recieve the results as a Bundle of OperationOutcomes.
 ## 📦 Installation Guides
 
 - [Linux Installation](./docs/INSTALL-linux.md)
-- [Windown Installation](./docs/INSTALL-windows.md)
+- [Windows Installation](./docs/INSTALL-windows.md)
+- [Configuration Reference](./docs/CONFIGURATION.md)
 
 ---
 
