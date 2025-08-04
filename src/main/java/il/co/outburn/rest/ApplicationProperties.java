@@ -30,7 +30,7 @@ public class ApplicationProperties {
             fhirVersion = configuration.getSv();
             implementationGuides = configuration.ig;
             loadedPackages = validationEngine.getContext().getLoadedPackages();
-            terminologyServer = configuration.txServer;
+            terminologyServer = configuration.getTxServer();
         }
     }
 }
