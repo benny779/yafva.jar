@@ -52,7 +52,7 @@ validator:
   allow-example-urls: false
   display-warnings: false
   want-invariant-in-message: false
-  level: hints
+  level: warnings
   best-practice-level: warning
   verbose: false
   show-times: false

@@ -123,7 +123,7 @@ public class FhirValidatorConfiguration {
      */
     @Getter
     @Setter
-    String level = "errors";
+    String level = "warnings";
 
     /**
      * When verbose is set, the validator will create hints against the resources

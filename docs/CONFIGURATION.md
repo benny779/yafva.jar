@@ -169,7 +169,7 @@ The application.yaml file contains several main sections for configuring differe
 
 ### validator.level
 - **Type**: String
-- **Default**: hints
+- **Default**: warnings
 - **Description**: Set the minimum level for validation messages.
 - **Valid Values**: hints, warnings, errors
 
@@ -230,7 +230,7 @@ validator:
     - 'hl7.fhir.r4.examples#4.0.1'
   verbose: true
   show-times: true
-  level: hints
+  level: warnings
 ```
 
 ## Command Line Override
