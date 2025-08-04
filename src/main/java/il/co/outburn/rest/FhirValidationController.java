@@ -45,8 +45,8 @@ public class FhirValidationController {
     @Hidden
     @GetMapping(value = "/", produces = {MediaType.TEXT_HTML_VALUE})
     public String index() {
-        if (configuration.txServer == null) configuration.txServer = "";
-        if (configuration.txLog == null) configuration.txLog = "";
+        String txServer = configuration.getTxServer();
+        if (txServer == null) txServer = "";
 
         var fhirVersion = configuration.sv;
         if (fhirVersion == null)
@@ -60,7 +60,7 @@ public class FhirValidationController {
         result.append("<table class='table'>");
         result.append("<tr><td>FHIR version</td><td>").append(fhirVersion).append("</td></tr>");
         result.append("<tr><td>Used implementation guides</td><td>").append(String.join("<br />", configuration.ig)).append("</td></tr>");
-        result.append("<tr><td>Terminology server URL</td><td>").append(configuration.txServer).append("</td></tr>");
+        result.append("<tr><td>Terminology server URL</td><td>").append(txServer).append("</td></tr>");
         result.append("</table>");
         result.append("<div class='mt-2 mb-2'><a href='/swagger-ui/index.html'>Swagger / OpenAPI</a></div>");
         result.append("</div></body></html>");

@@ -44,16 +44,24 @@ public class FhirValidatorConfiguration {
     /**
      * The terminology server URL to use for validation. This is an optional field.
      */
-    @Getter
     @Setter
     String txServer;
+    public String getTxServer() {
+        if (txServer == null || txServer.isBlank() || txServer.isEmpty())
+            return null;
+        return txServer;
+    }
 
     /**
      * The terminology server log file to use for validation. This is an optional field.
      */
-    @Getter
     @Setter
     String txLog;
+    public String getTxLog() {
+        if (txLog == null || txLog.isBlank() || txLog.isEmpty())
+            return null;
+        return txLog;
+    }
 
     /**
      * Removes OperationOutcome text from the validation result. This is an optional field.
@@ -163,8 +171,8 @@ public class FhirValidatorConfiguration {
         return List.of(
             "FHIR Version: " + getSv(),
             "Implementation Guides: " + ig,
-            "Terminology Server URL: " + txServer,
-            "Terminology Server Log: " + txLog,
+            "Terminology Server URL: " + getTxServer(),
+            "Terminology Server Log: " + getTxLog(),
             "Remove OperationOutcome Text: " + removeText,
             "Allow Any Extensions: " + anyExtensionsAllowed,
             "Allowed Extension Domains: " + extensionDomains,

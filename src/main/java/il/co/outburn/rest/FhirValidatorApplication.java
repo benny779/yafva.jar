@@ -1,6 +1,7 @@
 package il.co.outburn.rest;
 import org.hl7.fhir.r5.utils.validation.constants.BestPracticeWarningLevel;
 import org.hl7.fhir.r5.utils.validation.constants.ReferenceValidationPolicy;
+import org.hl7.fhir.utilities.Utilities;
 import org.hl7.fhir.utilities.VersionUtilities;
 import org.hl7.fhir.validation.IgLoader;
 import org.hl7.fhir.validation.ValidationEngine;
@@ -59,28 +60,23 @@ public class FhirValidatorApplication {
     private void initializeDefaultValidationEngine() throws Throwable {
         log.info("Start initializing default ValidationEngine");
         try {
-            if (configuration.txServer != null && configuration.txServer.isEmpty())
-                configuration.txServer = null;
-            if (configuration.txLog != null && configuration.txLog.isEmpty())
-                configuration.txLog = null;
-
-            boolean canRunWithoutTerminologyServer = (configuration.txServer == null);
             var loggingService = new FhirLoggingService();
-
-            var newValidationEngine = createValidationEngine(configuration.getSv(), canRunWithoutTerminologyServer, loggingService);
-            newValidationEngine.prepare();
+            var validationEngine = createValidationEngine(configuration.getSv(), loggingService);
+            loadIgs(validationEngine);
+            validationEngine.prepare();
             log.info("Default ValidationEngine is initialized.");
-            FhirValidationEngineCache.setDefaultValidationEngine(newValidationEngine);
+            FhirValidationEngineCache.setDefaultValidationEngine(validationEngine);
         } catch (Exception ex) {
             log.error("Failed to initialize default ValidationEngine", ex);
             throw ex;
         }
     }
 
-    private ValidationEngine createValidationEngine(String fhirVersion, boolean canRunWithoutTerminologyServer, FhirLoggingService loggingService) throws Exception {
+    private ValidationEngine createValidationEngine(String fhirVersion, FhirLoggingService loggingService) throws Exception {
+        boolean canRunWithoutTerminologyServer = (configuration.getTxServer() == null);
         var builder = new ValidationEngine.ValidationEngineBuilder()
                 .withVersion(fhirVersion)
-                .withTxServer(configuration.txServer, configuration.txLog, null, true)
+                .withTxServer(configuration.getTxServer(), configuration.getTxLog(), null, true)
                 .withCanRunWithoutTerminologyServer(canRunWithoutTerminologyServer)
                 .withLoggingService(loggingService);
         var corePackage = VersionUtilities.packageForVersion(fhirVersion) + "#" + VersionUtilities.getCurrentVersion(fhirVersion);
@@ -106,30 +102,37 @@ public class FhirValidatorApplication {
         validationEngine.setCrumbTrails(configuration.verbose);
         validationEngine.setShowTimes(configuration.showTimes);
 
-        IgLoader igLoader = validationEngine.getIgLoader();
-        if (configuration.ig != null) {
-            for (String ig : configuration.ig) {
-                if (ig != null) {
-                    igLoader.loadIg(validationEngine.getIgs(), validationEngine.getBinaries(), ig, true);
-                }
-            }
-        }
-
         return validationEngine;
     }
 
     private static BestPracticeWarningLevel readBestPractice(String s) {
-        if (s == null) return BestPracticeWarningLevel.Warning;
-        switch (s.toLowerCase()) {
-            case "warning" : return BestPracticeWarningLevel.Warning;
-            case "error" : return BestPracticeWarningLevel.Error;
-            case "hint" : return BestPracticeWarningLevel.Hint;
-            case "ignore" : return BestPracticeWarningLevel.Ignore;
-            case "w" : return BestPracticeWarningLevel.Warning;
-            case "e" : return BestPracticeWarningLevel.Error;
-            case "h" : return BestPracticeWarningLevel.Hint;
-            case "i" : return BestPracticeWarningLevel.Ignore;
+        if (Utilities.noString(s)) {
+            return BestPracticeWarningLevel.Warning;
         }
-        throw new Error("The best-practice level '" + s + "' is not valid");
+        s = s.toLowerCase();
+        if (Utilities.existsInList(s, "h", "hint", "hints")) {
+            return BestPracticeWarningLevel.Hint;
+        }
+        if (Utilities.existsInList(s, "w", "warning", "warnings")) {
+            return BestPracticeWarningLevel.Warning;
+        }
+        if (Utilities.existsInList(s, "e", "error", "errors")) {
+            return BestPracticeWarningLevel.Error;
+        }
+        if (Utilities.existsInList(s, "i", "ignore")) {
+            return BestPracticeWarningLevel.Error;
+        }
+        return BestPracticeWarningLevel.Warning;
+    }
+
+    public void loadIgs(ValidationEngine validationEngine) throws Exception {
+        IgLoader igLoader = validationEngine.getIgLoader();
+        if (configuration.ig != null) {
+            for (String ig : configuration.ig) {
+                if (!Utilities.noString(ig)) {
+                    igLoader.loadIg(validationEngine.getIgs(), validationEngine.getBinaries(), ig, true);
+                }
+            }
+        }
     }
 }
