@@ -1,6 +1,5 @@
 package il.co.outburn.rest;
 
-import java.io.IOException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -186,9 +185,29 @@ public class FhirValidationController {
         }
     }
 
-    @Operation(summary = "Get application configuration and environment information")
-    @GetMapping(value = "/info", produces = {MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<ApplicationProperties.ApplicationInfo> getInfo() throws IOException {
-        return ResponseEntity.ok(new ApplicationProperties.ApplicationInfo(configuration));
+    @Operation(
+            summary = "Get application configuration and environment information",
+            responses = {
+                @ApiResponse(
+                    responseCode = "200",
+                    description = "Success",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = ApplicationProperties.ApplicationInfo.class))),
+                @ApiResponse(
+                    responseCode = "500",
+                    description = "Internal Server Error",
+                    content = @Content(schema = @Schema(implementation = ProblemDetail.class)))})
+    @GetMapping(value = "/info", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_PROBLEM_JSON_VALUE})
+    public ResponseEntity<?> getInfo() {
+        try {
+            log.info("FhirValidationController::getInfo called");
+            return ResponseEntity.ok(new ApplicationProperties.ApplicationInfo(configuration));
+        } catch (Exception ex) {
+            log.error("FhirValidationController::getInfo - internal server error: ", ex);
+            var pd = ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(500), ex.getMessage());
+            return ResponseEntity
+                    .internalServerError()
+                    .contentType(MediaType.APPLICATION_PROBLEM_JSON)
+                    .body(pd);
+        }
     }
 }
