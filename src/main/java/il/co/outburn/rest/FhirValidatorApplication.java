@@ -78,7 +78,7 @@ public class FhirValidatorApplication {
         }
     }
 
-    private void configureFhirSettings() throws FileNotFoundException  {
+    private void configureFhirSettings() throws FileNotFoundException {
         var settingsFilePath = configuration.getSettingsFilePath();
         if (settingsFilePath == null) return;
 
@@ -88,9 +88,9 @@ public class FhirValidatorApplication {
             throw new FileNotFoundException("FHIR settings file does not exist: " + settingsFilePath);
         }
 
-        settingsFilePath = path.toAbsolutePath().toString();
-        log.info("FHIR settings file path: {}", settingsFilePath);
-        FhirSettings.setExplicitFilePath(settingsFilePath);
+        var settingsFileAbsolutePath = path.toAbsolutePath().toString();
+        log.info("FHIR settings file path: {}", settingsFileAbsolutePath);
+        FhirSettings.setExplicitFilePath(settingsFileAbsolutePath);
         
         // Log configured servers for debugging
         var servers = FhirSettings.getServers();
