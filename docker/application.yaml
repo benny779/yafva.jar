@@ -37,6 +37,7 @@ validator:
     - 'hl7.fhir.r4.examples#4.0.1'
   tx-server: # 'https://tx.fhir.org/r4'
   tx-log:
+  settings-file-path:
   locale: en
   remove-text: true
   any-extensions-allowed: false

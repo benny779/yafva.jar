@@ -44,6 +44,7 @@ validator:
     - 'il.core.fhir.r4#0.17.5'
   tx-server: # 'https://tx.fhir.org/r4'
   tx-log:
+  settings-file-path:
   locale: en
   remove-text: true
   any-extensions-allowed: false

@@ -20,7 +20,7 @@ public class FhirValidatorConfiguration {
     @Setter
     String sv;
     public String getSv() {
-        if (sv == null || sv.isBlank() || sv.isEmpty())
+        if (sv == null || sv.isBlank())
             return "4.0.1";
         return sv;
     }
@@ -47,7 +47,7 @@ public class FhirValidatorConfiguration {
     @Setter
     String txServer;
     public String getTxServer() {
-        if (txServer == null || txServer.isBlank() || txServer.isEmpty())
+        if (txServer == null || txServer.isBlank())
             return null;
         return txServer;
     }
@@ -58,9 +58,20 @@ public class FhirValidatorConfiguration {
     @Setter
     String txLog;
     public String getTxLog() {
-        if (txLog == null || txLog.isBlank() || txLog.isEmpty())
+        if (txLog == null || txLog.isBlank())
             return null;
         return txLog;
+    }
+
+    /**
+     * The path to the settings file for FHIR settings. This is an optional field.
+     */
+    @Setter
+    String settingsFilePath;
+    public String getSettingsFilePath() {
+        if (settingsFilePath == null || settingsFilePath.isBlank())
+            return null;
+        return settingsFilePath;
     }
 
     /**
@@ -173,6 +184,7 @@ public class FhirValidatorConfiguration {
             "Implementation Guides: " + ig,
             "Terminology Server URL: " + getTxServer(),
             "Terminology Server Log: " + getTxLog(),
+            "Settings File Path: " + getSettingsFilePath(),
             "Remove OperationOutcome Text: " + removeText,
             "Allow Any Extensions: " + anyExtensionsAllowed,
             "Allowed Extension Domains: " + extensionDomains,
