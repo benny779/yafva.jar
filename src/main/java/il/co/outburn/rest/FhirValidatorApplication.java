@@ -1,8 +1,13 @@
 package il.co.outburn.rest;
+import java.io.FileNotFoundException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 import org.hl7.fhir.r5.utils.validation.constants.BestPracticeWarningLevel;
 import org.hl7.fhir.r5.utils.validation.constants.ReferenceValidationPolicy;
 import org.hl7.fhir.utilities.Utilities;
 import org.hl7.fhir.utilities.VersionUtilities;
+import org.hl7.fhir.utilities.settings.FhirSettings;
 import org.hl7.fhir.validation.IgLoader;
 import org.hl7.fhir.validation.ValidationEngine;
 import org.hl7.fhir.validation.instance.advisor.BasePolicyAdvisorForFullValidation;
@@ -60,6 +65,7 @@ public class FhirValidatorApplication {
     private void initializeDefaultValidationEngine() throws Throwable {
         log.info("Start initializing default ValidationEngine");
         try {
+            configureFhirSettings(); // must be called before creating the ValidationEngine
             var loggingService = new FhirLoggingService();
             var validationEngine = createValidationEngine(configuration.getSv(), loggingService);
             loadIgs(validationEngine);
@@ -70,6 +76,25 @@ public class FhirValidatorApplication {
             log.error("Failed to initialize default ValidationEngine", ex);
             throw ex;
         }
+    }
+
+    private void configureFhirSettings() throws FileNotFoundException  {
+        var settingsFilePath = configuration.getSettingsFilePath();
+        if (settingsFilePath == null) return;
+
+        var path = Paths.get(settingsFilePath);
+        if (!Files.exists(path)) {
+            log.error("FHIR settings file does not exist: {}", settingsFilePath);
+            throw new FileNotFoundException("FHIR settings file does not exist: " + settingsFilePath);
+        }
+
+        settingsFilePath = path.toAbsolutePath().toString();
+        log.info("FHIR settings file path: {}", settingsFilePath);
+        FhirSettings.setExplicitFilePath(settingsFilePath);
+        
+        // Log configured servers for debugging
+        var servers = FhirSettings.getServers();
+        log.info("FHIR Settings servers: {}", servers);
     }
 
     private ValidationEngine createValidationEngine(String fhirVersion, FhirLoggingService loggingService) throws Exception {

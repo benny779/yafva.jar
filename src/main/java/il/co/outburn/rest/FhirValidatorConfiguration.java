@@ -64,6 +64,17 @@ public class FhirValidatorConfiguration {
     }
 
     /**
+     * The path to the settings file for FHIR settings. This is an optional field.
+     */
+    @Setter
+    String settingsFilePath;
+    public String getSettingsFilePath() {
+        if (settingsFilePath == null || settingsFilePath.isBlank() || settingsFilePath.isEmpty())
+            return null;
+        return settingsFilePath;
+    }
+
+    /**
      * Removes OperationOutcome text from the validation result. This is an optional field.
      */
     @Getter
@@ -173,6 +184,7 @@ public class FhirValidatorConfiguration {
             "Implementation Guides: " + ig,
             "Terminology Server URL: " + getTxServer(),
             "Terminology Server Log: " + getTxLog(),
+            "Settings File Path: " + getSettingsFilePath(),
             "Remove OperationOutcome Text: " + removeText,
             "Allow Any Extensions: " + anyExtensionsAllowed,
             "Allowed Extension Domains: " + extensionDomains,

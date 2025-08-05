@@ -122,6 +122,26 @@ The application.yaml file contains several main sections for configuring differe
 - **Required**: No
 - **Description**: The terminology server log file to use for validation. This is an optional field.
 
+### validator.settings-file-path
+- **Type**: String
+- **Required**: No
+- **Description**: The path to the settings file for FHIR settings. This is an optional field. The settings file allows you to configure custom package servers, authentication, and other FHIR-specific settings.
+- **Example**: '/path/to/fhir-settings.json'
+- **Reference**: For detailed information about fhir-settings.json format and options, see: https://confluence.hl7.org/spaces/FHIR/pages/161072808/Using+fhir-settings.json
+- **Sample fhir-settings.json**:
+  ```json
+  {
+    "ignoreDefaultPackageServers": true,
+    "servers": [
+      {
+        "url": "http://mypackageserver:4873",
+        "type": "fhir-package",
+        "authenticationType" : "none"
+      }
+    ]
+  }
+  ```
+
 ### validator.locale
 - **Type**: String
 - **Default**: en
@@ -217,6 +237,7 @@ validator:
     - 'hl7.fhir.us.core#6.1.0'
     - 'il.core.fhir.r4#0.17.5'
   tx-server: 'https://tx.fhir.org/r4'
+  settings-file-path: '/config/fhir-settings.json'
 ```
 
 ### Development Configuration
@@ -231,6 +252,34 @@ validator:
   verbose: true
   show-times: true
   level: warnings
+```
+
+### Configuration with Custom Package Server
+```yaml
+server:
+  port: 8080
+
+validator:
+  sv: '4.0.1'
+  ig:
+    - 'hl7.fhir.us.core#6.1.0'
+    - 'custom.implementation.guide#1.0.0'
+  settings-file-path: '/config/fhir-settings.json'
+  tx-server: 'https://tx.fhir.org/r4'
+```
+
+Example `fhir-settings.json` for the above configuration:
+```json
+{
+  "ignoreDefaultPackageServers": true,
+  "servers": [
+    {
+      "url": "http://mypackageserver:4873",
+      "type": "fhir-package",
+      "authenticationType" : "none"
+    }
+  ]
+}
 ```
 
 ## Command Line Override
