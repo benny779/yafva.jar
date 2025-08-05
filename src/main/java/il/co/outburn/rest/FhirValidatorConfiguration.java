@@ -20,7 +20,7 @@ public class FhirValidatorConfiguration {
     @Setter
     String sv;
     public String getSv() {
-        if (sv == null || sv.isBlank() || sv.isEmpty())
+        if (sv == null || sv.isBlank())
             return "4.0.1";
         return sv;
     }
@@ -47,7 +47,7 @@ public class FhirValidatorConfiguration {
     @Setter
     String txServer;
     public String getTxServer() {
-        if (txServer == null || txServer.isBlank() || txServer.isEmpty())
+        if (txServer == null || txServer.isBlank())
             return null;
         return txServer;
     }
@@ -58,7 +58,7 @@ public class FhirValidatorConfiguration {
     @Setter
     String txLog;
     public String getTxLog() {
-        if (txLog == null || txLog.isBlank() || txLog.isEmpty())
+        if (txLog == null || txLog.isBlank())
             return null;
         return txLog;
     }
@@ -69,7 +69,7 @@ public class FhirValidatorConfiguration {
     @Setter
     String settingsFilePath;
     public String getSettingsFilePath() {
-        if (settingsFilePath == null || settingsFilePath.isBlank() || settingsFilePath.isEmpty())
+        if (settingsFilePath == null || settingsFilePath.isBlank())
             return null;
         return settingsFilePath;
     }
