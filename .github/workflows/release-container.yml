@@ -167,13 +167,13 @@ jobs:
           if cmp -s "$A" "$B"; then
             echo "JARs are identical ✅"
           else
-            echo "JARs differ ⚠️ — you likely have native/platform-specific bits"
+            echo "JARs are differ ⚠️ — we likely have native/platform-specific bits"
           fi
 
       - name: Upload JARs to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ env.VERSION }}
+          tag_name: ${{ env.VERSION }}
           files: |
             ${{ steps.pick_jar_amd64.outputs.path }}
             ${{ steps.pick_jar_arm64.outputs.path }}
