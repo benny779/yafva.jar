@@ -1,47 +1,59 @@
-# Multi-stage build for optimized production image
-FROM openjdk:21-jdk-slim AS builder
+# syntax=docker/dockerfile:1.7
 
+################################
+# Build stage
+################################
+FROM --platform=$TARGETPLATFORM maven:3.9-eclipse-temurin-21 AS builder
 WORKDIR /app
 
-# Copy Maven wrapper and pom.xml first for better layer caching
-COPY mvnw mvnw.cmd pom.xml ./
-COPY .mvn .mvn
+COPY pom.xml ./
+COPY .mvn/ .mvn/
 
-# Copy source code
-COPY src ./src
+RUN --mount=type=cache,id=m2cache,target=/root/.m2 \
+  mvn -B -q -ntp -DskipTests \
+  -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
+  -Dorg.slf4j.simpleLogger.log.org.eclipse.aether.transfer=warn \
+  dependency:go-offline
 
-# Install Maven and build the application
-RUN apt-get update && \
-    apt-get install -y maven && \
-    rm -rf /var/lib/apt/lists/* && \
-    mvn clean package -DskipTests
+COPY src/ src/
 
-# Production stage
-FROM eclipse-temurin:21-jre
+RUN --mount=type=cache,id=m2cache,target=/root/.m2 \
+  mvn -T 1C -B -q -ntp -DskipTests clean package
 
+################################
+# Runtime stage
+################################
+FROM eclipse-temurin:21-jre as production
 WORKDIR /app
 
-# Install curl for health checks
-RUN apt-get update && \
-    apt-get install -y curl && \
+# Optional params
+ARG APP_VERSION=dev
+ARG RUNTIME_UID=10001
+ARG RUNTIME_GID=10001
+
+# ENV tracing
+LABEL org.opencontainers.image.version=$APP_VERSION
+ENV APP_VERSION=$APP_VERSION \
+    JAVA_TOOL_OPTIONS="-Djava.security.egd=file:/dev/./urandom -XX:MaxRAMPercentage=75.0 -Dfile.encoding=UTF-8"
+
+# Minimal curl for HEALTHCHECK
+RUN apt-get update -qq && \
+    apt-get install -y -qq --no-install-recommends curl ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
-# Create non-root user for security
-RUN groupadd -r yafva && useradd -r -g yafva yafva
+# Create the user UID/GID (if there is one - ignore the error)
+RUN set -eux; \
+    getent group "${RUNTIME_GID}" || groupadd -r -g "${RUNTIME_GID}" app; \
+    getent passwd "${RUNTIME_UID}" || useradd -r -u "${RUNTIME_UID}" -g "${RUNTIME_GID}" -s /sbin/nologin app
 
-# Copy the JAR file from builder stage
-COPY --from=builder /app/target/yafva*.jar /app/yafva.jar
+COPY --from=builder --chown=${RUNTIME_UID}:${RUNTIME_GID} /app/target/yafva*.jar /app/yafva.jar
 
-# Create FHIR cache directory - ensure it's in the correct location for yafva user
-RUN mkdir -p /home/yafva/.fhir/packages && chown -R yafva:yafva /app /home/yafva/.fhir
+RUN mkdir -p /home/app/.fhir/packages && chown -R ${RUNTIME_UID}:${RUNTIME_GID} /home/app
 
-# Switch to non-root user
-USER yafva
-
+USER ${RUNTIME_UID}:${RUNTIME_GID}
 EXPOSE 8080
 
-# Health check for Kubernetes readiness/liveness probes
 HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
-    CMD curl -f http://localhost:8080/actuator/health || exit 1
+  CMD curl -fsS http://localhost:8080/actuator/health || exit 1
 
-ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "/app/yafva.jar"]
+ENTRYPOINT ["java","-jar","/app/yafva.jar"]

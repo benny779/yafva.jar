@@ -1,0 +1,181 @@
+name: Release & Publish Docker (Java)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  release:
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.semrel.outputs.new_release_version }}
+      published: ${{ steps.semrel.outputs.new_release_published }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install release tooling
+        run: npm ci
+
+      - id: semrel
+        name: Semantic Release (tags + GH release only)
+        uses: cycjimmy/semantic-release-action@v4
+        with:
+          semantic_version: 21.1.1
+          branches: main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  docker:
+    needs: release
+    if: needs.release.outputs.published == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      security-events: write
+    env:
+      VERSION: ${{ needs.release.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Prepare image name (lowercase)
+        id: img
+        run: |
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/${REPO_NAME}"
+          echo "name=${IMAGE,,}" >> "$GITHUB_OUTPUT"
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: docker.io/${{ steps.img.outputs.name }}
+          tags: |
+            type=semver,pattern={{version}},value=${{ env.VERSION }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ env.VERSION }}
+            type=semver,pattern={{major}},value=${{ env.VERSION }}
+          labels: |
+            org.opencontainers.image.title=${{ github.event.repository.name }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.vendor=OutBrun LTD
+            org.opencontainers.image.authors=arkady@outburn.co.il
+            org.opencontainers.image.documentation=https://github.com/${{ github.repository }}#readme
+            org.opencontainers.image.base.name=eclipse-temurin:21-jre
+
+      - name: Build & Push (multi-arch + provenance + SBOM)
+        id: build
+        uses: docker/build-push-action@v6
+        env:
+          BUILDKIT_PROGRESS: plain
+          DOCKER_BUILD_RECORD_UPLOAD: 'false'
+        with:
+          context: .
+          file: ./docker/Dockerfile
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          annotations: ${{ steps.meta.outputs.annotations }}
+          cache-from: type=gha,scope=${{ github.repository }}-${{ github.ref_name }}
+          cache-to: type=gha,mode=max,scope=${{ github.repository }}-${{ github.ref_name }}
+          attests: |
+            type=provenance,mode=max
+            type=sbom
+          build-args: |
+            APP_VERSION=${{ env.VERSION }}
+            RUNTIME_UID=10001
+            RUNTIME_GID=10001
+
+      - name: Get per-arch digests (by index digest)
+        id: archdig
+        run: |
+          set -euo pipefail
+          REF="docker.io/${{ steps.img.outputs.name }}@${{ steps.build.outputs.digest }}"
+          mkdir -p out
+          docker buildx imagetools inspect "$REF" --raw > out/index.json
+          AMD=$(jq -r '.manifests[] | select(.platform.architecture=="amd64") | .digest' out/index.json | head -n1)
+          ARM=$(jq -r '.manifests[] | select(.platform.architecture=="arm64") | .digest' out/index.json | head -n1)
+          if [ -z "$AMD" ] || [ -z "$ARM" ]; then
+            echo "Failed to resolve per-arch digests"; cat out/index.json; exit 1
+          fi
+          echo "amd=$AMD" >> "$GITHUB_OUTPUT"
+          echo "arm=$ARM" >> "$GITHUB_OUTPUT"
+
+      - name: Extract JAR from image (amd64)
+        id: pick_jar_amd64
+        run: |
+          set -euo pipefail
+          IMAGE="docker.io/${{ steps.img.outputs.name }}"
+          DIGEST="${{ steps.archdig.outputs.amd }}"
+          REF="${IMAGE}@${DIGEST}"
+          docker pull "$REF" >/dev/null
+          CID=$(docker create --platform=linux/amd64 "$REF")
+          mkdir -p out
+          docker cp "$CID":/app/yafva.jar "out/${{ github.event.repository.name }}-${{ env.VERSION }}-amd64.jar"
+          docker rm "$CID" >/dev/null
+          echo "path=out/${{ github.event.repository.name }}-${{ env.VERSION }}-amd64.jar" >> "$GITHUB_OUTPUT"
+
+      - name: Extract JAR from image (arm64)
+        id: pick_jar_arm64
+        run: |
+          set -euo pipefail
+          IMAGE="docker.io/${{ steps.img.outputs.name }}"
+          DIGEST="${{ steps.archdig.outputs.arm }}"
+          REF="${IMAGE}@${DIGEST}"
+          docker pull "$REF" >/dev/null
+          CID=$(docker create --platform=linux/arm64 "$REF")
+          mkdir -p out
+          docker cp "$CID":/app/yafva.jar "out/${{ github.event.repository.name }}-${{ env.VERSION }}-arm64.jar"
+          docker rm "$CID" >/dev/null
+          echo "path=out/${{ github.event.repository.name }}-${{ env.VERSION }}-arm64.jar" >> "$GITHUB_OUTPUT"
+
+      - name: Compare amd64 vs arm64 JARs
+        run: |
+          A="${{ steps.pick_jar_amd64.outputs.path }}"
+          B="${{ steps.pick_jar_arm64.outputs.path }}"
+          sha256sum "$A" "$B"
+          if cmp -s "$A" "$B"; then
+            echo "JARs are identical ✅"
+          else
+            echo "JARs differ ⚠️ — you likely have native/platform-specific bits"
+          fi
+
+      - name: Upload JARs to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.VERSION }}
+          files: |
+            ${{ steps.pick_jar_amd64.outputs.path }}
+            ${{ steps.pick_jar_arm64.outputs.path }}
+
+          
