@@ -56,6 +56,25 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: maven
+
+      - name: Update version in pom.xml
+        run: |
+          mvn versions:set -DnewVersion=${{ env.VERSION }} -DgenerateBackupPoms=false
+
+      - name: Commit updated pom.xml
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add pom.xml
+          git commit -m "chore: update pom.xml version to ${{ env.VERSION }}" || exit 0
+          git push
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
