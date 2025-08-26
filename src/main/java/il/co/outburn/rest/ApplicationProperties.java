@@ -32,7 +32,11 @@ public class ApplicationProperties {
             hapiValidatorVersion = getHapiValidatorVersion();
             fhirVersion = configuration.getSv();
             implementationGuides = configuration.ig;
-            loadedPackages = validationEngine.getContext().getLoadedPackages();
+            loadedPackages = validationEngine.getContext()
+                    .getLoadedPackages()
+                    .stream()
+                    .sorted()
+                    .toList();
             terminologyServer = configuration.getTxServer();
             packageServers = validationEngine.getPcm()
                     .getPackageServers()
