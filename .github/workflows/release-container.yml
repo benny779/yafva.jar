@@ -7,6 +7,7 @@ on:
 
 jobs:
   release:
+    if: github.repository == 'Outburn-IL/yafva.jar'
     permissions:
       contents: write
       issues: write
@@ -42,7 +43,7 @@ jobs:
 
   docker:
     needs: release
-    if: needs.release.outputs.published == 'true'
+    if: github.repository == 'Outburn-IL/yafva.jar' && needs.release.outputs.published == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write
