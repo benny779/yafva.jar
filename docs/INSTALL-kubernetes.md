@@ -6,26 +6,9 @@ This guide explains how to deploy the **YAFVA.JAR** validator in a Kubernetes cl
 
 ## Prerequisites
 
-- A running Kubernetes cluster (v1.22+ recommended)  
-- `kubectl` configured to access the cluster  
-- Access to pull the container image `outburnltd/yafva.jar:latest`  
-- Optional: image pull secrets if the registry is private  
-
----
-
-## Deployment
-
-Apply the manifest:
-
-```sh
-  kubectl apply -f yafva-all.yaml
-```
-
-This will create:
-
-- **ConfigMap** – holds the `application.yaml` configuration  
-- **Deployment** – runs the validator pods  
-- **Service** – exposes the validator inside the cluster  
+- A running Kubernetes cluster (v1.22+ recommended)
+- `kubectl` configured to access the cluster
+- Access to pull the container image `outburnltd/yafva.jar:latest`
 
 ---
 
@@ -77,7 +60,7 @@ data:
       sv: '4.0.1'
       ig:
         - 'il.core.fhir.r4'
-        - 'il.fhir.r4.dgmc'
+        - 'fume.outburn.r4'
       tx-server: 'https://tx.fhir.org/r4'
       tx-log:
       locale: en
@@ -103,8 +86,6 @@ spec:
         runAsUser: 10001
         runAsGroup: 10001
         fsGroup: 10001
-      imagePullSecrets:
-        - name: gitlab-secrets
       tolerations:
         - key: "iris"
           operator: "Equal"
@@ -118,14 +99,14 @@ spec:
           protocol: TCP
         env:
         - name: JAVA_OPTS
-          value: "-Xms3g -Xmx7g"
+          value: "-Xmx2g -Xms512m"
         resources:
           requests:
-            memory: "4Gi"
-            cpu: "3"
+            memory: "1Gi"
+            cpu: "500m"
           limits:
-            memory: "8Gi"
-            cpu: "4"
+            memory: "3Gi"
+            cpu: "2000m"
         livenessProbe:
           httpGet:
             path: /actuator/health/liveness
@@ -149,6 +130,8 @@ spec:
           mountPath: /app/application.yaml
           subPath: application.yaml
       volumes:
+      - name: fhir-cache
+        emptyDir: {}
       - name: config-volume
         configMap:
           name: yafva-jar-config
@@ -172,6 +155,21 @@ spec:
     protocol: TCP
   type: ClusterIP
 ```
+---
+
+## Deployment
+
+Apply the manifest:
+
+```sh
+  kubectl apply -f yafva-all.yaml
+```
+
+This will create:
+
+- **ConfigMap** – holds the `application.yaml` configuration
+- **Deployment** – runs the validator pods
+- **Service** – exposes the validator inside the cluster
 
 ---
 
@@ -201,11 +199,11 @@ Verify readiness:
 
 The deployment defines two health probes:
 
-- **Liveness Probe** – checks `/actuator/health/liveness` every 30 seconds.  
-- **Readiness Probe** – checks `/actuator/health/readiness`.  
+- **Liveness Probe** – checks `/actuator/health/liveness` every 30 seconds.
+- **Readiness Probe** – checks `/actuator/health/readiness`.
 
 ⚠️ **Note on readiness delay:**  
-The initial readiness delay is set to **400 seconds**. This value is intentionally high to ensure the validator has enough time to **download and cache required FHIR packages** during the very first startup.  
+The initial readiness delay is set to **400 seconds**. This value is intentionally high to ensure the validator has enough time to **download and cache required FHIR packages** during the very first startup.
 
 Subsequent restarts of the pods (where the cache already exists on the persistent volume) will usually be much faster. In such cases, you may safely lower the `initialDelaySeconds` to around **150 seconds** for a better balance between availability and startup speed.
 

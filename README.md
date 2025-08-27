@@ -1,6 +1,6 @@
 # YAFVA.JAR
 ![A Yafva Jar!](yafva-jar.png)
-## (Yet Another) FHIR VAlidator JAva wRapper  
+## (Yet Another) FHIR VAlidator JAva wRapper
 ### Wrapped. Lit. Ready to validate.
 ---
 Just another JAR. But faster.
@@ -50,7 +50,7 @@ API documentation page (Swagger)
 
 ### /validate
 Validate a single resource.  
-*optional URL parameters*: 
+*optional URL parameters*:
 - profiles
 - format
 
