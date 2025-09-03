@@ -4,10 +4,7 @@ services:
   validator:
     restart: always
     container_name: yafva-jar
-    image: yafva-jar:latest
-    build:
-      context: ..
-      dockerfile: ./docker/Dockerfile
+    image: outburnltd/yafva.jar:latest
     ports:
       - "8080:8080"
     volumes:
@@ -20,4 +17,4 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 30s
+      start_period: 300s
