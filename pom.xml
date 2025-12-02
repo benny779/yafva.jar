@@ -27,7 +27,7 @@
 		<url/>
 	</scm>
 	<properties>
-		<hapi.fhir.version>6.7.4</hapi.fhir.version>
+		<hapi.fhir.version>6.7.8</hapi.fhir.version>
 		<org.fhir.ucum.version>1.0.9</org.fhir.ucum.version>
 		<java.version>21</java.version>
 		<maven.compiler.target>21</maven.compiler.target>
