@@ -11,6 +11,7 @@ import org.hl7.fhir.utilities.settings.FhirSettings;
 import org.hl7.fhir.validation.IgLoader;
 import org.hl7.fhir.validation.ValidationEngine;
 import org.hl7.fhir.validation.instance.advisor.BasePolicyAdvisorForFullValidation;
+import org.hl7.fhir.validation.service.model.InstanceValidatorParameters;
 import org.hl7.fhir.validation.service.utils.ValidationLevel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
@@ -98,33 +99,37 @@ public class FhirValidatorApplication {
     }
 
     private ValidationEngine createValidationEngine(String fhirVersion, FhirLoggingService loggingService) throws Exception {
+        String corePackage = VersionUtilities.packageForVersion(fhirVersion) + "#" + VersionUtilities.getCurrentVersion(fhirVersion);
         boolean canRunWithoutTerminologyServer = (configuration.getTxServer() == null);
+
+        InstanceValidatorParameters instanceValidatorParameters = new InstanceValidatorParameters()
+            .setUnknownCodeSystemsCauseErrors(configuration.unknownCodeSystemsCauseErrors)
+            .setAllowExampleUrls(configuration.allowExampleUrls)
+            .setWantInvariantsInMessages(configuration.wantInvariantInMessage)
+            .setLevel(ValidationLevel.fromCode(configuration.level))
+            .setBestPracticeLevel(readBestPractice(configuration.bestPracticeLevel))
+            .setCrumbTrails(configuration.verbose);
+
         var builder = new ValidationEngine.ValidationEngineBuilder()
                 .withVersion(fhirVersion)
                 .withTxServer(configuration.getTxServer(), configuration.getTxLog(), null, true)
                 .withCanRunWithoutTerminologyServer(canRunWithoutTerminologyServer)
-                .withLoggingService(loggingService);
-        var corePackage = VersionUtilities.packageForVersion(fhirVersion) + "#" + VersionUtilities.getCurrentVersion(fhirVersion);
+                .withLoggingService(loggingService)
+                .withDefaultInstanceValidatorParameters(instanceValidatorParameters);
 
         log.info("Core package: {}", corePackage);
         configuration.getAllProperties().forEach(log::info);
 
-        var validationEngine = builder.fromSource(corePackage);
+        ValidationEngine validationEngine = builder.fromSource(corePackage);
         validationEngine.setDebug(true);
-        validationEngine.setPolicyAdvisor(new BasePolicyAdvisorForFullValidation(ReferenceValidationPolicy.IGNORE));
+        validationEngine.setPolicyAdvisor(new BasePolicyAdvisorForFullValidation(ReferenceValidationPolicy.IGNORE, null));
 
         validationEngine.setAnyExtensionsAllowed(configuration.anyExtensionsAllowed);
-        validationEngine.setUnknownCodeSystemsCauseErrors(configuration.unknownCodeSystemsCauseErrors);
         if (configuration.extensionDomains != null && !configuration.extensionDomains.isEmpty()) {
             validationEngine.getExtensionDomains().addAll(configuration.extensionDomains);
         }
 
-        validationEngine.setAllowExampleUrls(configuration.allowExampleUrls);
         validationEngine.setDisplayWarnings(configuration.displayWarnings);
-        validationEngine.setWantInvariantInMessage(configuration.wantInvariantInMessage);
-        validationEngine.setLevel(ValidationLevel.fromCode(configuration.level));
-        validationEngine.setBestPracticeLevel(readBestPractice(configuration.bestPracticeLevel));
-        validationEngine.setCrumbTrails(configuration.verbose);
         validationEngine.setShowTimes(configuration.showTimes);
 
         return validationEngine;
@@ -151,12 +156,11 @@ public class FhirValidatorApplication {
     }
 
     public void loadIgs(ValidationEngine validationEngine) throws Exception {
+        if (configuration.ig == null) return;
         IgLoader igLoader = validationEngine.getIgLoader();
-        if (configuration.ig != null) {
-            for (String ig : configuration.ig) {
-                if (!Utilities.noString(ig)) {
-                    igLoader.loadIg(validationEngine.getIgs(), validationEngine.getBinaries(), ig, true);
-                }
+        for (String ig : configuration.ig) {
+            if (!Utilities.noString(ig)) {
+                igLoader.loadIg(validationEngine.getIgs(), validationEngine.getBinaries(), ig, true);
             }
         }
     }
