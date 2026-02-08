@@ -61,7 +61,7 @@ public class FhirUtil {
     }
 
     public static org.hl7.fhir.r5.model.OperationOutcome exceptionToOutcome(Throwable e) {
-        return org.hl7.fhir.r5.utils.OperationOutcomeUtilities.outcomeFromTextError(e.toString());
+        return org.hl7.fhir.r5.utils.OperationOutcomeUtilities.createError(e.toString());
     }
 
     public static boolean operationOutcomeHasErrorIssue(OperationOutcome outcome) {
