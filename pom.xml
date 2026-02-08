@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>il.co.outburn</groupId>
 	<artifactId>yafva</artifactId>
-	<version>1.2.7</version>
+	<version>1.2.8</version>
 	<name>yafva.jar</name>
 	<description>Yet Another FHIR Validator Java Wrapper - REST API facade for the official HL7 FHIR validator</description>
 	<parent>
