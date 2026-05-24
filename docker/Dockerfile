@@ -8,8 +8,9 @@ WORKDIR /app
 
 # Maven settings.xml authenticating the github-yafva repo (id matches pom.xml).
 # GITHUB_ACTOR / GITHUB_TOKEN are read from BuildKit secrets at build time so
-# the token never lands in an image layer.
-COPY docker/settings.xml /root/.m2/settings.xml
+# the token never lands in an image layer. Lives outside /root/.m2 because
+# the BuildKit cache mount below shadows everything under that path.
+COPY docker/settings.xml /etc/maven/settings.xml
 
 COPY pom.xml ./
 COPY .mvn/ .mvn/
@@ -19,7 +20,7 @@ RUN --mount=type=cache,id=m2cache,target=/root/.m2 \
   --mount=type=secret,id=gh_token \
   GITHUB_ACTOR="$(cat /run/secrets/gh_actor)" \
   GITHUB_TOKEN="$(cat /run/secrets/gh_token)" \
-  mvn -B -q -ntp -DskipTests \
+  mvn -s /etc/maven/settings.xml -B -q -ntp -DskipTests \
   -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
   -Dorg.slf4j.simpleLogger.log.org.eclipse.aether.transfer=warn \
   dependency:go-offline
@@ -31,7 +32,7 @@ RUN --mount=type=cache,id=m2cache,target=/root/.m2 \
   --mount=type=secret,id=gh_token \
   GITHUB_ACTOR="$(cat /run/secrets/gh_actor)" \
   GITHUB_TOKEN="$(cat /run/secrets/gh_token)" \
-  mvn -T 1C -B -q -ntp -DskipTests clean package
+  mvn -s /etc/maven/settings.xml -T 1C -B -q -ntp -DskipTests clean package
 
 ################################
 # Runtime stage
