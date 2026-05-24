@@ -68,6 +68,42 @@ Validate a bath Bundle and recieve the results as a Bundle of OperationOutcomes.
 
 ---
 
+## 🛠️ Local development
+
+The HL7 FHIR validator dependency comes from the
+[Outburn-IL fork](https://github.com/Outburn-IL/org.hl7.fhir.core) of
+`org.hl7.fhir.core`, published to GitHub Packages. Packages are private to
+GitHub auth, so Maven needs a token with `read:packages` scope before it can
+resolve `ca.uhn.hapi.fhir:org.hl7.fhir.validation`.
+
+One-time setup (PowerShell, using the `gh` CLI):
+
+```powershell
+# 1. Grant gh the read:packages scope (opens a browser once)
+gh auth refresh -h github.com -s read:packages
+
+# 2. Make sure ~/.m2/settings.xml has a <server id="github-yafva"> entry
+#    referencing ${env.GITHUB_PACKAGES_TOKEN} (see project docs).
+
+# 3. Per-shell: expose the token to Maven
+$env:GITHUB_PACKAGES_TOKEN = gh auth token
+
+# 4. Build
+./mvnw clean package
+```
+
+To make it persistent across shells:
+
+```powershell
+setx GITHUB_PACKAGES_TOKEN (gh auth token)
+```
+
+Fork-bump procedure (when the validator dependency needs to follow upstream)
+is documented in
+[`hapifhir-validator/SYNC.md`](https://github.com/Outburn-IL/org.hl7.fhir.core/blob/master/SYNC.md).
+
+---
+
 ## 🔍 License
 
 This project is licensed under the **Apache License 2.0**.
