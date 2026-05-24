@@ -49,6 +49,7 @@ jobs:
       contents: write
       id-token: write
       security-events: write
+      packages: read   # pull fork artifacts from maven.pkg.github.com/Outburn-IL
     env:
       VERSION: ${{ needs.release.outputs.version }}
     steps:
@@ -135,6 +136,11 @@ jobs:
             APP_VERSION=${{ env.VERSION }}
             RUNTIME_UID=10001
             RUNTIME_GID=10001
+          # Both arches build via QEMU in the same job, so each gets the
+          # secrets identically -> amd64 and arm64 jars should be byte-equal.
+          secrets: |
+            gh_actor=${{ github.actor }}
+            gh_token=${{ secrets.GITHUB_TOKEN }}
 
       - name: Get per-arch digests (by index digest)
         id: archdig
@@ -187,7 +193,9 @@ jobs:
           if cmp -s "$A" "$B"; then
             echo "JARs are identical ✅"
           else
-            echo "JARs are differ ⚠️ — we likely have native/platform-specific bits"
+            # Spring Boot uber-jars aren't strictly byte-reproducible (manifest
+            # timestamps, entry ordering). Warn but don't fail - both jars run.
+            echo "JARs differ ⚠️ — likely benign (timestamps/ordering); investigate if functional drift suspected"
           fi
 
       - name: Upload JARs to GitHub Release

@@ -6,10 +6,17 @@
 FROM --platform=$TARGETPLATFORM maven:3.9-eclipse-temurin-21 AS builder
 WORKDIR /app
 
+# Maven settings.xml authenticating the github-yafva repo (id matches pom.xml).
+# GITHUB_ACTOR / GITHUB_TOKEN are read from BuildKit secrets at build time so
+# the token never lands in an image layer.
+COPY docker/settings.xml /root/.m2/settings.xml
+
 COPY pom.xml ./
 COPY .mvn/ .mvn/
 
 RUN --mount=type=cache,id=m2cache,target=/root/.m2 \
+  --mount=type=secret,id=gh_actor,env=GITHUB_ACTOR \
+  --mount=type=secret,id=gh_token,env=GITHUB_TOKEN \
   mvn -B -q -ntp -DskipTests \
   -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
   -Dorg.slf4j.simpleLogger.log.org.eclipse.aether.transfer=warn \
@@ -18,6 +25,8 @@ RUN --mount=type=cache,id=m2cache,target=/root/.m2 \
 COPY src/ src/
 
 RUN --mount=type=cache,id=m2cache,target=/root/.m2 \
+  --mount=type=secret,id=gh_actor,env=GITHUB_ACTOR \
+  --mount=type=secret,id=gh_token,env=GITHUB_TOKEN \
   mvn -T 1C -B -q -ntp -DskipTests clean package
 
 ################################

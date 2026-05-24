@@ -27,12 +27,27 @@
 		<url/>
 	</scm>
 	<properties>
-		<hapi.fhir.version>6.8.0</hapi.fhir.version>
-		<org.fhir.ucum.version>1.0.9</org.fhir.ucum.version>
+		<!--
+			Version of the Outburn-IL fork of org.hl7.fhir.core, published to
+			https://maven.pkg.github.com/Outburn-IL/org.hl7.fhir.core.
+			See ../hapifhir-validator/SYNC.md for the fork-bump procedure.
+		-->
+		<hapi.fhir.version>6.9.8-yafva.2</hapi.fhir.version>
 		<java.version>21</java.version>
 		<maven.compiler.target>21</maven.compiler.target>
 		<maven.compiler.source>21</maven.compiler.source>
 	</properties>
+
+	<repositories>
+		<repository>
+			<id>github-yafva</id>
+			<name>Outburn-IL fork of org.hl7.fhir.core</name>
+			<url>https://maven.pkg.github.com/Outburn-IL/org.hl7.fhir.core</url>
+			<releases><enabled>true</enabled></releases>
+			<snapshots><enabled>true</enabled></snapshots>
+		</repository>
+	</repositories>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -67,7 +82,7 @@
 		<dependency>
 			<groupId>org.fhir</groupId>
 			<artifactId>ucum</artifactId>
-			<version>${org.fhir.ucum.version}</version>
+			<version>1.0.9</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
