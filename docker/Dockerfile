@@ -15,8 +15,10 @@ COPY pom.xml ./
 COPY .mvn/ .mvn/
 
 RUN --mount=type=cache,id=m2cache,target=/root/.m2 \
-  --mount=type=secret,id=gh_actor,env=GITHUB_ACTOR \
-  --mount=type=secret,id=gh_token,env=GITHUB_TOKEN \
+  --mount=type=secret,id=gh_actor \
+  --mount=type=secret,id=gh_token \
+  GITHUB_ACTOR="$(cat /run/secrets/gh_actor)" \
+  GITHUB_TOKEN="$(cat /run/secrets/gh_token)" \
   mvn -B -q -ntp -DskipTests \
   -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
   -Dorg.slf4j.simpleLogger.log.org.eclipse.aether.transfer=warn \
@@ -25,8 +27,10 @@ RUN --mount=type=cache,id=m2cache,target=/root/.m2 \
 COPY src/ src/
 
 RUN --mount=type=cache,id=m2cache,target=/root/.m2 \
-  --mount=type=secret,id=gh_actor,env=GITHUB_ACTOR \
-  --mount=type=secret,id=gh_token,env=GITHUB_TOKEN \
+  --mount=type=secret,id=gh_actor \
+  --mount=type=secret,id=gh_token \
+  GITHUB_ACTOR="$(cat /run/secrets/gh_actor)" \
+  GITHUB_TOKEN="$(cat /run/secrets/gh_token)" \
   mvn -T 1C -B -q -ntp -DskipTests clean package
 
 ################################
